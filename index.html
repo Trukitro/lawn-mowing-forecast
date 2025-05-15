@@ -81,12 +81,55 @@
         margin-bottom: 10px;
         }
         @media (max-width: 600px) {
-        .planner-controls {
-            flex-direction: column;
+            .planner-controls {
+                flex-direction: column;
+            }
+            .planner-controls input, .planner-controls button {
+                width: 100%;
+            }
         }
-        .planner-controls input, .planner-controls button {
-            width: 100%;
+        #rainList {
+        padding: 0;
+        margin: 0;
         }
+        .rain-card {
+        margin-bottom: 18px;
+        padding: 16px 14px;
+        border-radius: 12px;
+        background: linear-gradient(90deg, #e0f7fa 0%, #f7f9fa 100%);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+        list-style: none;
+        transition: box-shadow 0.2s;
+        }
+        .rain-card:hover {
+        box-shadow: 0 4px 16px rgba(0,0,0,0.13);
+        background: linear-gradient(90deg, #b2ebf2 0%, #f7f9fa 100%);
+        }
+        .rain-card .rain-header {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        }
+        .rain-card .rain-icon {
+        font-size: 2em;
+        }
+        .rain-card .rain-date {
+        font-weight: bold;
+        font-size: 1.15em;
+        }
+        .rain-card .rain-desc {
+        color: #555;
+        font-size: 1em;
+        }
+        .rain-card .rain-amount {
+        margin-top: 8px;
+        color: #007bff;
+        font-weight: 500;
+        }
+        .rain-card .rain-hours {
+        margin-top: 8px;
+        font-size: 0.98em;
+        color: #2d7a2d;
         }
     </style>
 </head>
@@ -527,22 +570,20 @@
         document.getElementById('rainList').innerHTML = top3.map((day, i) => {
             let bestHours = hourly ? getBestMowingHours(day.iso, hourly) : [];
             let hoursText = bestHours.length
-                ? `<div style="margin-top:6px;"><strong>Best hours:</strong> <span style="color:#2d7a2d;">${bestHours.join(', ')}</span></div>`
+                ? `<div class="rain-hours"><strong>Best hours:</strong> ${bestHours.join(', ')}</div>`
                 : '';
             let code = hourly ? getDayWeatherCode(day.iso, hourly) : null;
             let cond = code ? (weatherCodeMap[code] || {icon:"❓",desc:"Unknown"}) : {icon:"",desc:""};
             return `
-            <li style="margin-bottom:18px; padding:12px 10px; border-radius:8px; background:#f7f9fa; box-shadow:0 1px 3px rgba(0,0,0,0.04); list-style:none;">
-                <div style="display:flex;align-items:center;gap:10px;">
-                    <span style="font-size:1.5em;">${cond.icon}</span>
+            <li class="rain-card">
+                <div class="rain-header">
+                    <span class="rain-icon">${cond.icon}</span>
                     <div>
-                        <div style="font-weight:bold;font-size:1.1em;">${i + 1}. ${day.date}</div>
-                        <div style="color:#555;">${cond.desc}</div>
+                        <div class="rain-date">${i + 1}. ${day.date}</div>
+                        <div class="rain-desc">${cond.desc}</div>
                     </div>
                 </div>
-                <div style="margin-top:6px;">
-                    <span style="color:#007bff;"><strong>Rain:</strong> ${day.rain.toFixed(1)} mm</span>
-                </div>
+                <div class="rain-amount"><strong>Rain:</strong> ${day.rain.toFixed(1)} mm</div>
                 ${hoursText}
             </li>
             `;
