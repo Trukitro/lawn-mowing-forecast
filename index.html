@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Lawn Mowing Forecast Tool</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <style>
+        body {
+        font-family: Arial, sans-serif;
+        background: #eef2f3;
+        margin: 0;
+        padding: 20px;
+        }
+        .card {
+        background: #fff;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        h2 {
+        margin-top: 0;
+        }
+        input, button {
+        padding: 10px;
+        margin: 5px 5px 10px 0;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        font-size: 1rem;
+        }
+        button {
+        background-color: #28a745;
+        color: white;
+        cursor: pointer;
+        }
+        button:hover {
+        background-color: #218838;
+        }
+        ul {
+        padding-left: 18px;
+        }
+        .recommendation {
+        font-size: 1.1em;
+        font-weight: bold;
+        color: #333;
+        }
+        iframe {
+        border: none;
+        border-radius: 10px;
+        }
+        .link {
+        margin-top: 5px;
+        display: inline-block;
+        }
+        .weather-line {
+        display: flex;
+        align-items: center;
+        margin: 4px 0;
+        }
+        .weather-line span {
+        margin-left: 8px;
+        }
+        .planner-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 10px;
+        }
+        .planner-controls input {
+        flex: 1 1 140px;
+        }
+        .planner-controls button {
+        white-space: nowrap;
+        }
+        .error {
+        color: red;
+        font-size: 0.9em;
+        margin-top: -5px;
+        margin-bottom: 10px;
+        }
+        @media (max-width: 600px) {
+        .planner-controls {
+            flex-direction: column;
+        }
+        .planner-controls input, .planner-controls button {
+            width: 100%;
+        }
+        }
+    </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2 id="title-main">🌱 Lawn Mowing Planner <button onclick="toggleLanguage()" aria-label="Translate">🌐 Translate</button></h2>
+    <p id="default-location">Default location: <strong>Puerto Rico</strong>. You can also enter your location below manually or use your current device location.</p>
+
+    <div class="planner-controls">
+        <input type="text" id="lat" placeholder="Latitude (e.g. 18.4663)">
+        <input type="text" id="lon" placeholder="Longitude (e.g. -66.1057)">
+        <button onclick="updateCoords()" aria-label="Update Location">Update Location</button>
+        <button onclick="useMyLocation()" aria-label="Use My Location">📍 Use My Location</button>
+    </div>
+    <div id="error" class="error"></div>
+    <div class="link">
+      <a href="https://www.google.com/maps" target="_blank">Find your coordinates with Google Maps</a>
+    </div>
+
+    <p><strong>📌 Current Coordinates:</strong> <span id="coords">18.2208, -66.5901</span></p>
+    <p><strong>🌍 City:</strong> <span id="city">Fetching...</span></p>
+    <div id="mapSpinner" style="display:none;text-align:center;">
+        <span>Loading map...</span>
+    </div>
+    <div id="miniMap" style="width:100%;height:250px;margin-top:10px;border-radius:10px;display:none"></div>
+  </div>
+
+  <div class="card">
+    <h2>☀️ Weather Forecast (Today)</h2>
+    <div id="weather">
+        <div class="weather-line" id="weather-condition">⏳ <span>Loading...</span></div>
+        <div class="weather-line">🌡️ <span id="temp">Loading...</span></div>
+        <div class="weather-line">🌬️ <span id="wind">Loading...</span></div>
+        <div class="weather-line">☔️ <span id="rain">Loading...</span></div>
+        <div class="weather-line">🌧️ <span id="humidity">Loading...</span></div>
+        <div class="weather-line">🌞 <span id="uv">Loading...</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🗕️ Service Recommendation</h2>
+    <p id="recommendation" class="recommendation">Checking conditions...</p>
+  </div>
+
+  <div class="card">
+    <h2>📈 Top 3 Best Mowing Days This Week</h2>
+    <p id="bestDay" class="recommendation">Calculating...</p>
+    <ul id="rainList"></ul>
+  </div>
+
+  <div class="card">
+    <h2>☂️ Live Rain Radar</h2>
+    <iframe id="radarMap" src="" width="100%" height="400" allowfullscreen loading="lazy"></iframe>
+  </div>
+
+  <script>
+    let lat = 18.2208;
+    let lon = -66.5901;
+    let isSpanish = false;
+    let miniMap; // global variable for the map
+
+    const weatherCodeMap = {
+        0: { icon: "☀️", desc: "Clear sky" },
+        1: { icon: "🌤️", desc: "Mainly clear" },
+        2: { icon: "⛅", desc: "Partly cloudy" },
+        3: { icon: "☁️", desc: "Overcast" },
+        45: { icon: "🌫️", desc: "Fog" },
+        48: { icon: "🌫️", desc: "Depositing rime fog" },
+        51: { icon: "🌦️", desc: "Light drizzle" },
+        53: { icon: "🌦️", desc: "Drizzle" },
+        55: { icon: "🌦️", desc: "Dense drizzle" },
+        56: { icon: "🌧️", desc: "Freezing drizzle" },
+        57: { icon: "🌧️", desc: "Dense freezing drizzle" },
+        61: { icon: "🌦️", desc: "Slight rain" },
+        63: { icon: "🌧️", desc: "Rain" },
+        65: { icon: "🌧️", desc: "Heavy rain" },
+        66: { icon: "🌧️", desc: "Freezing rain" },
+        67: { icon: "🌧️", desc: "Heavy freezing rain" },
+        71: { icon: "🌨️", desc: "Slight snow fall" },
+        73: { icon: "🌨️", desc: "Snow fall" },
+        75: { icon: "❄️", desc: "Heavy snow fall" },
+        77: { icon: "❄️", desc: "Snow grains" },
+        80: { icon: "🌦️", desc: "Slight rain showers" },
+        81: { icon: "🌧️", desc: "Rain showers" },
+        82: { icon: "🌧️", desc: "Violent rain showers" },
+        85: { icon: "🌨️", desc: "Slight snow showers" },
+        86: { icon: "❄️", desc: "Heavy snow showers" },
+        95: { icon: "⛈️", desc: "Thunderstorm" },
+        96: { icon: "⛈️", desc: "Thunderstorm with hail" },
+        99: { icon: "⛈️", desc: "Thunderstorm with heavy hail" }
+    };
+
+    const translations = {
+        es: {
+        "🌱 Lawn Mowing Planner": "🌱 Planificador de Corte de Césped",
+        "Default location:": "Ubicación predeterminada:",
+        "You can also enter your location below manually or use your current device location.": "También puede ingresar su ubicación manualmente o usar la ubicación de su dispositivo.",
+        "Update Location": "Actualizar ubicación",
+        "Use My Location": "Usar mi ubicación",
+        "Translate": "Traducir",
+        "Find your coordinates with Google Maps": "Encuentra tus coordenadas con Google Maps",
+        "Current Coordinates:": "Coordenadas actuales:",
+        "City:": "Ciudad:",
+        "Weather Forecast (Today)": "Pronóstico del tiempo (hoy)",
+        "Wind:": "Viento:",
+        "Rain:": "Lluvia:",
+        "Humidity:": "Humedad:",
+        "UV Index:": "Índice UV:",
+        "Service Recommendation": "Recomendación de servicio",
+        "Checking conditions...": "Verificando condiciones...",
+        "Top 3 Best Mowing Days This Week": "Top 3 mejores días para cortar césped esta semana",
+        "Calculating...": "Calculando...",
+        "Live Rain Radar": "Radar de lluvia en vivo",
+        "Ideal day for mowing — no or very little rain.": "Día ideal para cortar césped — sin lluvia o muy poca.",
+        "Light rain expected. Mowing possible if urgent.": "Se espera lluvia ligera. Corte posible si es urgente.",
+        "Heavy rain today. Recommend rescheduling.": "Lluvia fuerte hoy. Se recomienda reprogramar.",
+        "Best day:": "Mejor día:",
+        "Dry": "Seco",
+        "Light rain": "Lluvia ligera"
+        }
+    };
+
+    function toggleLanguage() 
+    {
+        isSpanish = !isSpanish;
+        // Main title
+        document.getElementById("title-main").textContent = isSpanish
+        ? translations.es["🌱 Lawn Mowing Planner"]
+        : "🌱 Lawn Mowing Planner";
+        // Default location
+        document.getElementById("default-location").innerHTML = isSpanish
+        ? `${translations.es["Default location:"]} <strong>Puerto Rico</strong>. ${translations.es["You can also enter your location below manually or use your current device location."]}`
+        : `Default location: <strong>Puerto Rico</strong>. You can also enter your location below manually or use your current device location.`;
+        // Buttons
+        document.querySelector('button[onclick="updateCoords()"]').textContent = isSpanish
+        ? translations.es["Update Location"]
+        : "Update Location";
+        document.querySelector('button[onclick="useMyLocation()"]').textContent = isSpanish
+        ? "📍 " + translations.es["Use My Location"]
+        : "📍 Use My Location";
+        document.querySelector('button[onclick="toggleLanguage()"]').textContent = isSpanish
+        ? "🌐 " + translations.es["Translate"]
+        : "🌐 Translate";
+        // Google Maps link
+        document.querySelector('.link a').textContent = isSpanish
+        ? translations.es["Find your coordinates with Google Maps"]
+        : "Find your coordinates with Google Maps";
+        // Labels
+        document.querySelector('p strong').textContent = isSpanish
+        ? "📌 " + translations.es["Current Coordinates:"]
+        : "📌 Current Coordinates:";
+        document.querySelectorAll('p strong')[1].textContent = isSpanish
+        ? "🌍 " + translations.es["City:"]
+        : "🌍 City:";
+        // Card titles
+        document.querySelectorAll('.card h2')[1].textContent = isSpanish
+        ? "☀️ " + translations.es["Weather Forecast (Today)"]
+        : "☀️ Weather Forecast (Today)";
+        document.querySelectorAll('.card h2')[2].textContent = isSpanish
+        ? "🗕️ " + translations.es["Service Recommendation"]
+        : "🗕️ Service Recommendation";
+        document.querySelectorAll('.card h2')[3].textContent = isSpanish
+        ? "📈 " + translations.es["Top 3 Best Mowing Days This Week"]
+        : "📈 Top 3 Best Mowing Days This Week";
+        document.querySelectorAll('.card h2')[4].textContent = isSpanish
+        ? "☂️ " + translations.es["Live Rain Radar"]
+        : "☂️ Live Rain Radar";
+
+        // Recommendation and best day (if present)
+        const rec = document.getElementById('recommendation');
+        if (rec) 
+        {
+            if (isSpanish) 
+            {
+                rec.textContent = rec.textContent
+                .replace("Ideal day for mowing — no or very little rain.", translations.es["Ideal day for mowing — no or very little rain."])
+                .replace("Light rain expected. Mowing possible if urgent.", translations.es["Light rain expected. Mowing possible if urgent."])
+                .replace("Heavy rain today. Recommend rescheduling.", translations.es["Heavy rain today. Recommend rescheduling."]);
+            } 
+            else 
+            {
+                // You may want to re-run updateTodayRecommendation to restore English
+                fetchWeather();
+            }
+        }
+
+        const bestDay = document.getElementById('bestDay');
+
+        if (bestDay) 
+        {
+            if (isSpanish) 
+            {
+                bestDay.textContent = bestDay.textContent
+                .replace("Best day:", translations.es["Best day:"])
+                .replace("(Dry)", `(${translations.es["Dry"]})`)
+                .replace("(Light rain)", `(${translations.es["Light rain"]})`);
+            } 
+            else 
+            {
+                fetchWeather();
+            }
+        }
+    }
+
+    function showMiniMap(lat, lon) 
+    {
+        document.getElementById('mapSpinner').style.display = 'block';
+        const mapDiv = document.getElementById('miniMap');
+        mapDiv.style.display = 'block';
+
+        setTimeout(() => { // Let the spinner show for a moment
+            if (miniMap) 
+            {
+                miniMap.setView([lat, lon], 13);
+                if (miniMap.marker) 
+                {
+                    miniMap.marker.setLatLng([lat, lon]);
+                    miniMap.marker.bindPopup(`<b>Lat:</b> ${lat.toFixed(4)}<br><b>Lon:</b> ${lon.toFixed(4)}`).openPopup();
+                } 
+                else 
+                {
+                    miniMap.marker = L.marker([lat, lon]).addTo(miniMap)
+                        .bindPopup(`<b>Lat:</b> ${lat.toFixed(4)}<br><b>Lon:</b> ${lon.toFixed(4)}`).openPopup();
+                }
+            } 
+            else 
+            {
+                miniMap = L.map('miniMap').setView([lat, lon], 13);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '© OpenStreetMap'
+                }).addTo(miniMap);
+                miniMap.marker = L.marker([lat, lon]).addTo(miniMap)
+                    .bindPopup(`<b>Lat:</b> ${lat.toFixed(4)}<br><b>Lon:</b> ${lon.toFixed(4)}`).openPopup();
+
+                miniMap.on('click', function(e) {
+                    lat = e.latlng.lat;
+                    lon = e.latlng.lng;
+                    document.getElementById('coords').textContent = `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+                    document.getElementById('lat').value = lat.toFixed(4);
+                    document.getElementById('lon').value = lon.toFixed(4);
+                    fetchWeather();
+                    fetchCity();
+                    showMiniMap(lat, lon);
+                });
+            }
+            document.getElementById('mapSpinner').style.display = 'none';
+        }, 300); // 300ms spinner
+    }
+
+    function useMyLocation() 
+    {
+        const errorEl = document.getElementById('error');
+        if (navigator.geolocation) 
+        {
+            navigator.geolocation.getCurrentPosition((position) => {
+                lat = position.coords.latitude;
+                lon = position.coords.longitude;
+                errorEl.textContent = "";
+                document.getElementById('coords').textContent = `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+                fetchWeather();
+                fetchCity();
+                showMiniMap(lat, lon); // <-- Add this line
+            }, () => {
+            errorEl.textContent = "Location access denied or unavailable.";
+            });
+        } 
+        else 
+        {
+            errorEl.textContent = "Geolocation not supported.";
+        }
+    }
+
+    function updateCoords() 
+    {
+        const errorEl = document.getElementById('error');
+        const newLat = parseFloat(document.getElementById('lat').value);
+        const newLon = parseFloat(document.getElementById('lon').value);
+        if (isNaN(newLat) || isNaN(newLon)) {
+            errorEl.textContent = "Please enter valid numeric coordinates.";
+            return;
+        }
+        errorEl.textContent = "";
+        lat = newLat;
+        lon = newLon;
+        document.getElementById('coords').textContent = `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+        fetchWeather();
+        fetchCity();
+        showMiniMap(lat, lon); // <-- Add this line
+    }
+
+    async function fetchWeather() 
+    {
+        try 
+        {
+            const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=precipitation_sum,uv_index_max&hourly=precipitation,temperature_2m,uv_index,weathercode&timezone=auto`;
+            const res = await fetch(url);
+            const data = await res.json();
+
+            const weather = data.current_weather;
+            const rainToday = data.daily.precipitation_sum[0];
+            const humidity = data.hourly.relative_humidity_2m ? data.hourly.relative_humidity_2m[0] : "N/A";
+            const uv = data.daily.uv_index_max[0];
+
+            // NEW: Show weather condition
+            const code = weather.weathercode;
+            const cond = weatherCodeMap[code] || { icon: "❓", desc: "Unknown" };
+            document.getElementById('weather-condition').innerHTML = `${cond.icon} <span>${cond.desc}</span>`;
+
+            document.getElementById('temp').textContent = `${weather.temperature}°C`;
+            document.getElementById('wind').textContent = `Wind: ${weather.windspeed} km/h`;
+            document.getElementById('rain').textContent = `Rain: ${rainToday} mm`;
+            document.getElementById('humidity').textContent = `Humidity: ${humidity}%`;
+            document.getElementById('uv').textContent = `UV Index: ${uv}`;
+
+            updateTodayRecommendation(rainToday);
+            suggestBestDays(data.daily.time, data.daily.precipitation_sum, data.hourly);
+
+            const radarUrl = `https://www.rainviewer.com/map.html?loc=${lat.toFixed(3)},${lon.toFixed(3)},8&oFa=0&oC=0&oU=0&oCS=1&oF=0&oAP=1&c=3&o=83&lm=1&layer=radar`;
+            document.getElementById('radarMap').src = radarUrl;
+        } 
+        catch (error) 
+        {
+            console.error(error);
+        }
+    }
+
+    function formatHour(h) 
+    {
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        let hour = h % 12;
+        if (hour === 0) hour = 12;
+        return `${hour}:00${ampm}`;
+    }
+
+    // Helper to get best hours for mowing
+    function getBestMowingHours(day, hourly) {
+        // Find all hours for this day
+        const hours = [];
+        for (let i = 0; i < hourly.time.length; i++) {
+            if (hourly.time[i].startsWith(day)) {
+                // Criteria: little/no rain, temp 18-30°C, UV index ≤ 6
+                const rain = hourly.precipitation[i];
+                const temp = hourly.temperature_2m[i];
+                const uv = hourly.uv_index[i];
+                const hour = new Date(hourly.time[i]).getHours();
+                if (rain <= 0.2 && temp >= 18 && temp <= 30 && uv <= 6) {
+                    hours.push(hour);
+                }
+            }
+        }
+        // Group consecutive hours into ranges
+        const ranges = [];
+        let start = null, prev = null;
+        for (const h of hours) {
+            if (start === null) {
+                start = h;
+                prev = h;
+            } else if (h === prev + 1) {
+                prev = h;
+            } else {
+                ranges.push([start, prev]);
+                start = h;
+                prev = h;
+            }
+        }
+        if (start !== null) ranges.push([start, prev]);
+        // Format as "7-9am", "17-18pm", etc.
+        return ranges.map(([s, e]) => {
+            if (s === e) return formatHour(s);
+            return `${formatHour(s)}-${formatHour(e)}`;
+        });
+    }
+
+    function suggestBestDays(dates, rainAmounts, hourly) 
+    {
+        let forecast = dates.map((d, i) => ({ date: new Date(d).toDateString(), rain: rainAmounts[i], iso: d }))
+                            .slice(0, 7)
+                            .sort((a, b) => a.rain - b.rain);
+        const top3 = forecast.slice(0, 3);
+        document.getElementById('rainList').innerHTML = top3.map((day, i) => {
+            let bestHours = hourly ? getBestMowingHours(day.iso, hourly) : [];
+            let hoursText = bestHours.length ? `<br><span style="font-size:0.95em;color:#555;">Best hours: ${bestHours.join(', ')}</span>` : '';
+            return `<li>📊 ${i + 1}. ${day.date}: ${day.rain.toFixed(1)} mm rain${hoursText}</li>`;
+        }).join('');
+
+        const suggestion = top3[0].rain <= 1 ? `✅ Best day: ${top3[0].date} (Dry)` : `⚠️ Best day: ${top3[0].date} (Light rain)`;
+        document.getElementById('bestDay').textContent = suggestion;
+    }
+
+    async function fetchCity() 
+    {
+        try 
+        {
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
+            const data = await res.json();
+            const city = data.address.city || data.address.town || data.address.village || data.address.municipality || "Unknown location";
+            document.getElementById("city").textContent = city;
+        } 
+        catch (e) 
+        {
+            document.getElementById("city").textContent = "Unable to retrieve";
+        }
+    }
+
+    function updateTodayRecommendation(rain) 
+    {
+        let message = rain <= 1 ? "✅ Ideal day for mowing — no or very little rain." :
+                        rain <= 3 ? "⚠️ Light rain expected. Mowing possible if urgent." :
+                        "❌ Heavy rain today. Recommend rescheduling.";
+        document.getElementById('recommendation').textContent = message;
+    }
+
+    fetchWeather();
+    fetchCity();
+  </script>
+
+</body>
+</html>
+
