@@ -34,8 +34,8 @@ No build steps or dependencies required!
 
 ## 📱 Screenshots
 
-![Screenshot_1](images/Screenshot_1.png) <!-- Add your screenshot file if available -->
-![Screenshot_2](images/Screenshot_2.png) <!-- Add your screenshot file if available -->
+![Screenshot_1](Images/Screenshot_1.png) <!-- Add your screenshot file if available -->
+![Screenshot_2](Images/Screenshot_2.png) <!-- Add your screenshot file if available -->
 
 ## 📝 License
 
