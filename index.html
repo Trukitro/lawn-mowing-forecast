@@ -474,13 +474,20 @@
     {
         try 
         {
-            const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=precipitation_sum,uv_index_max&hourly=precipitation,temperature_2m,uv_index,weathercode&timezone=auto`;
+            const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=precipitation_sum,uv_index_max&hourly=precipitation,temperature_2m,uv_index,weathercode,relative_humidity_2m&timezone=auto`;
             const res = await fetch(url);
             const data = await res.json();
 
             const weather = data.current_weather;
             const rainToday = data.daily.precipitation_sum[0];
-            const humidity = data.hourly.relative_humidity_2m ? data.hourly.relative_humidity_2m[0] : "N/A";
+            //const humidity = data.hourly.relative_humidity_2m ? data.hourly.relative_humidity_2m[0] : "N/A";
+            let humidity = "N/A";
+            if (data.hourly && data.hourly.relative_humidity_2m && data.hourly.time) {
+                // Find the closest hour to now
+                const now = new Date();
+                const idx = data.hourly.time.findIndex(t => t === weather.time);
+                humidity = idx !== -1 ? data.hourly.relative_humidity_2m[idx] : "N/A";
+            }
             const uv = data.daily.uv_index_max[0];
 
             // NEW: Show weather condition

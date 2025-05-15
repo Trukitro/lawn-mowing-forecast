@@ -1,0 +1,30 @@
+<!-- Lawn Mowing Forecast Tool SVG Icon -->
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  <!-- Sun -->
+  <circle cx="48" cy="16" r="6" stroke="#FFA500" stroke-width="2" fill="#FFD700"/>
+  <!-- Sun rays -->
+  <g stroke="#FFA500" stroke-width="2">
+    <line x1="48" y1="4" x2="48" y2="10"/>
+    <line x1="48" y1="22" x2="48" y2="28"/>
+    <line x1="36" y1="16" x2="42" y2="16"/>
+    <line x1="54" y1="16" x2="60" y2="16"/>
+    <line x1="42.4" y1="9.6" x2="46.2" y2="13.4"/>
+    <line x1="53.6" y1="9.6" x2="49.8" y2="13.4"/>
+    <line x1="42.4" y1="22.4" x2="46.2" y2="18.6"/>
+    <line x1="53.6" y1="22.4" x2="49.8" y2="18.6"/>
+  </g>
+
+  <!-- Grass -->
+  <g stroke="#228B22" stroke-width="2" stroke-linecap="round">
+    <path d="M4 60 Q6 52 8 60"/>
+    <path d="M10 60 Q12 50 14 60"/>
+    <path d="M16 60 Q18 48 20 60"/>
+    <path d="M22 60 Q24 50 26 60"/>
+    <path d="M28 60 Q30 52 32 60"/>
+    <path d="M34 60 Q36 50 38 60"/>
+    <path d="M40 60 Q42 48 44 60"/>
+    <path d="M46 60 Q48 50 50 60"/>
+    <path d="M52 60 Q54 52 56 60"/>
+    <path d="M58 60 Q60 54 62 60"/>
+  </g>
+</svg>
