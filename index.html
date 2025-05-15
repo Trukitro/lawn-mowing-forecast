@@ -95,7 +95,26 @@
   <div class="card">
     <h2 id="title-main">🌱 Lawn Mowing Planner <button onclick="toggleLanguage()" aria-label="Translate">🌐 Translate</button></h2>
     <p id="default-location">Default location: <strong>Puerto Rico</strong>. You can also enter your location below manually or use your current device location.</p>
-
+    <div style="margin-bottom:12px;">
+        <label for="pr-cities" style="font-weight:bold;">Select a City in Puerto Rico:</label>
+        <select id="pr-cities" name="pr-cities" style="margin-left:8px; padding:6px 10px; border-radius:5px;">
+            <option value="">--Choose a city--</option>
+            <option value="18.4655,-66.1057">San Juan</option>
+            <option value="18.3989,-66.1659">Bayamón</option>
+            <option value="18.3762,-65.9402">Carolina</option>
+            <option value="18.0111,-66.6141">Ponce</option>
+            <option value="18.3860,-66.1337">Guaynabo</option>
+            <option value="18.2336,-66.0410">Caguas</option>
+            <option value="18.2013,-67.1390">Mayagüez</option>
+            <option value="18.3582,-67.1549">Aguadilla</option>
+            <option value="18.1515,-65.8164">Humacao</option>
+            <option value="18.3244,-65.6550">Fajardo</option>
+            <option value="18.2772,-67.1568">Añasco</option>
+            <option value="18.4321,-66.2218">Toa Baja</option>
+            <option value="18.3537,-66.0216">Trujillo Alto</option>
+            <option value="18.1208,-65.4500">Vieques</option>
+        </select>
+    </div>
     <div class="planner-controls">
         <input type="text" id="lat" placeholder="Latitude (e.g. 18.4663)">
         <input type="text" id="lon" placeholder="Longitude (e.g. -66.1057)">
@@ -209,6 +228,16 @@
         "Light rain": "Lluvia ligera"
         }
     };
+
+    document.getElementById('pr-cities').addEventListener('change', function() {
+        const val = this.value;
+        if (val) {
+            const [latVal, lonVal] = val.split(',');
+            document.getElementById('lat').value = latVal;
+            document.getElementById('lon').value = lonVal;
+            updateCoords();
+        }
+    });
 
     function toggleLanguage() 
     {
@@ -462,6 +491,33 @@
         });
     }
 
+    function getDayWeatherCode(day, hourly) 
+    {
+        // Get all weather codes for this day
+        const codes = [];
+        for (let i = 0; i < hourly.time.length; i++) 
+        {
+            if (hourly.time[i].startsWith(day)) 
+            {
+                codes.push(hourly.weathercode[i]);
+            }
+        }
+        // Find the most frequent code
+        if (codes.length === 0) return null;
+        const freq = {};
+        codes.forEach(c => freq[c] = (freq[c] || 0) + 1);
+        let max = 0, code = codes[0];
+        for (const c in freq) 
+        {
+            if (freq[c] > max) 
+            {
+                max = freq[c];
+                code = c;
+            }
+        }
+        return code;
+    }
+
     function suggestBestDays(dates, rainAmounts, hourly) 
     {
         let forecast = dates.map((d, i) => ({ date: new Date(d).toDateString(), rain: rainAmounts[i], iso: d }))
@@ -470,8 +526,26 @@
         const top3 = forecast.slice(0, 3);
         document.getElementById('rainList').innerHTML = top3.map((day, i) => {
             let bestHours = hourly ? getBestMowingHours(day.iso, hourly) : [];
-            let hoursText = bestHours.length ? `<br><span style="font-size:0.95em;color:#555;">Best hours: ${bestHours.join(', ')}</span>` : '';
-            return `<li>📊 ${i + 1}. ${day.date}: ${day.rain.toFixed(1)} mm rain${hoursText}</li>`;
+            let hoursText = bestHours.length
+                ? `<div style="margin-top:6px;"><strong>Best hours:</strong> <span style="color:#2d7a2d;">${bestHours.join(', ')}</span></div>`
+                : '';
+            let code = hourly ? getDayWeatherCode(day.iso, hourly) : null;
+            let cond = code ? (weatherCodeMap[code] || {icon:"❓",desc:"Unknown"}) : {icon:"",desc:""};
+            return `
+            <li style="margin-bottom:18px; padding:12px 10px; border-radius:8px; background:#f7f9fa; box-shadow:0 1px 3px rgba(0,0,0,0.04); list-style:none;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span style="font-size:1.5em;">${cond.icon}</span>
+                    <div>
+                        <div style="font-weight:bold;font-size:1.1em;">${i + 1}. ${day.date}</div>
+                        <div style="color:#555;">${cond.desc}</div>
+                    </div>
+                </div>
+                <div style="margin-top:6px;">
+                    <span style="color:#007bff;"><strong>Rain:</strong> ${day.rain.toFixed(1)} mm</span>
+                </div>
+                ${hoursText}
+            </li>
+            `;
         }).join('');
 
         const suggestion = top3[0].rain <= 1 ? `✅ Best day: ${top3[0].date} (Dry)` : `⚠️ Best day: ${top3[0].date} (Light rain)`;
