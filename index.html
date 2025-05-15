@@ -272,6 +272,15 @@
         }
     };
 
+    const urlParams = getUrlParams();
+    if (urlParams.lat && urlParams.lon) {
+        lat = parseFloat(urlParams.lat);
+        lon = parseFloat(urlParams.lon);
+        document.getElementById('lat').value = lat;
+        document.getElementById('lon').value = lon;
+        document.getElementById('coords').textContent = `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+    }
+
     document.getElementById('pr-cities').addEventListener('change', function() {
         const val = this.value;
         if (val) {
@@ -281,6 +290,16 @@
             updateCoords();
         }
     });
+
+    function getUrlParams() {
+        const params = {};
+        window.location.search.substring(1).split("&").forEach(function(part) {
+            if (!part) return;
+            const [key, value] = part.split("=");
+            params[decodeURIComponent(key)] = decodeURIComponent(value);
+        });
+        return params;
+    }
 
     function toggleLanguage() 
     {
