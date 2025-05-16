@@ -131,12 +131,31 @@
         font-size: 0.98em;
         color: #2d7a2d;
         }
+        .button-link {
+            display: inline-block;
+            background-color: #28a745;
+            color: #fff !important;
+            padding: 10px 18px;
+            border-radius: 5px;
+            border: none;
+            font-size: 1rem;
+            font-weight: bold;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .button-link:hover {
+            background-color: #218838;
+            text-decoration: none;
+            color: #fff !important;
+        }
     </style>
 </head>
 <body>
 
     <div class="card">
         <h2 id="title-main">🌱 Lawn Mowing Planner <button onclick="toggleLanguage()" aria-label="Translate">🌐 Translate</button></h2>
+        <a href="client_service.html" class="button-link">👥 View Clients & Services</a>
         <p id="default-location">Default location: <strong>Puerto Rico</strong>/Juncos. You can also enter your location below manually or use your current device location.</p>
         <div style="margin-bottom:12px;">
             <label for="pr-cities" style="font-weight:bold;">Select a City in Puerto Rico:</label>
@@ -161,7 +180,7 @@
         <div class="planner-controls">
             <input type="text" id="lat" placeholder="Latitude (e.g. 18.4663)">
             <input type="text" id="lon" placeholder="Longitude (e.g. -66.1057)">
-            <button onclick="updateCoords()" aria-label="Update Location">Update Location</button>
+            <button onclick="updateCoords()" aria-label="Update Location">🔄 Update Location</button>
             <button onclick="useMyLocation()" aria-label="Use My Location">📍 Use My Location</button>
         </div>
         <div id="error" class="error"></div>
