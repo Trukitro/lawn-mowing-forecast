@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Clients & Services</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- Move this UP here -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="init_sql.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background: #eef2f3; padding: 20px; }
+        .card { background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        select, button { padding: 8px; border-radius: 5px; border: 1px solid #ccc; margin-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 8px 12px; border-bottom: 1px solid #ddd; }
+        th { background: #f7f9fa; }
+    </style>
+</head>
+<body>
+    <a href="index.html" style="
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 1000;
+        text-decoration: none;
+        font-size: 1.2em;
+        padding: 6px 14px;
+        border-radius: 6px;
+        background: #28a745;
+        color: #fff;
+        font-weight: bold;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        display: inline-block;
+    ">
+        ⬅️ Back
+    </a>
+    <div class="card" style="margin-top: 60px;">
+        <h2>Clients</h2>
+        <button id="addClientBtn" style="margin-bottom:12px;">➕ Create New Client</button>
+        <select id="clientSelect">
+            <option value="">-- Select a client --</option>
+        </select>
+        <div id="clientInfo"></div>
+    </div>
+    <div class="card" id="serviceCard" style="display:none;">
+        <h2>Service Information</h2>
+        <table id="serviceTable">
+            <thead>
+                <tr><th>Date</th><th>Notes</th></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <script>
+        // Wait for SQL.js and DB to be ready
+        initDatabase().then(() => {
+            const clients = getClients();
+            const select = document.getElementById('clientSelect');
+            clients.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c[0];
+                opt.textContent = `${c[1]} (${c[2]})`;
+                select.appendChild(opt);
+            });
+
+            select.addEventListener('change', function() {
+                const id = this.value;
+                const infoDiv = document.getElementById('clientInfo');
+                const serviceCard = document.getElementById('serviceCard');
+                if (!id) {
+                    infoDiv.innerHTML = '';
+                    serviceCard.style.display = 'none';
+                    return;
+                }
+                const client = clients.find(c => c[0] == id);
+                infoDiv.innerHTML = `<strong>Name:</strong> ${client[1]}<br><strong>Address:</strong> ${client[2]}<br><strong>Phone:</strong> ${client[3]}`;
+                // Show services
+                const services = getServices(id);
+                const tbody = document.querySelector('#serviceTable tbody');
+                tbody.innerHTML = '';
+                if (services.length) {
+                    services.forEach(s => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `<td>${s[2]}</td><td>${s[3]}</td>`;
+                        tbody.appendChild(tr);
+                    });
+                    serviceCard.style.display = '';
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="2">No services found.</td></tr>';
+                    serviceCard.style.display = '';
+                }
+            });
+        });
+
+        // After the DOM is ready and clientSelect is populated
+        $('#clientSelect').select2({ width: '100%', placeholder: '-- Select a client --' });
+
+        // Complete list of Puerto Rico municipalities with coordinates
+        const prCities = [
+        { name: "Adjuntas", lat: 18.1636, lon: -66.7226 },
+        { name: "Aguada", lat: 18.3797, lon: -67.1888 },
+        { name: "Aguadilla", lat: 18.4275, lon: -67.1541 },
+        { name: "Aguas Buenas", lat: 18.2546, lon: -66.1057 },
+        { name: "Aibonito", lat: 18.1416, lon: -66.2671 },
+        { name: "Añasco", lat: 18.2856, lon: -67.1411 },
+        { name: "Arecibo", lat: 18.4721, lon: -66.7157 },
+        { name: "Arroyo", lat: 17.9658, lon: -66.0616 },
+        { name: "Barceloneta", lat: 18.4505, lon: -66.5385 },
+        { name: "Barranquitas", lat: 18.1869, lon: -66.3060 },
+        { name: "Bayamón", lat: 18.3989, lon: -66.1659 },
+        { name: "Cabo Rojo", lat: 18.0863, lon: -67.1456 },
+        { name: "Caguas", lat: 18.2336, lon: -66.0410 },
+        { name: "Camuy", lat: 18.4831, lon: -66.8441 },
+        { name: "Canóvanas", lat: 18.3797, lon: -65.9099 },
+        { name: "Carolina", lat: 18.3762, lon: -65.9402 },
+        { name: "Cataño", lat: 18.4464, lon: -66.1180 },
+        { name: "Cayey", lat: 18.1116, lon: -66.1660 },
+        { name: "Ceiba", lat: 18.2636, lon: -65.6485 },
+        { name: "Ciales", lat: 18.3369, lon: -66.4738 },
+        { name: "Cidra", lat: 18.1744, lon: -66.1610 },
+        { name: "Coamo", lat: 18.0822, lon: -66.3585 },
+        { name: "Comerío", lat: 18.2197, lon: -66.2252 },
+        { name: "Corozal", lat: 18.3375, lon: -66.3166 },
+        { name: "Culebra", lat: 18.3167, lon: -65.3000 },
+        { name: "Dorado", lat: 18.4580, lon: -66.2671 },
+        { name: "Fajardo", lat: 18.3258, lon: -65.6524 },
+        { name: "Florida", lat: 18.3628, lon: -66.5591 },
+        { name: "Guánica", lat: 17.9710, lon: -66.9085 },
+        { name: "Guayama", lat: 17.9843, lon: -66.1133 },
+        { name: "Guayanilla", lat: 17.9813, lon: -66.7913 },
+        { name: "Guaynabo", lat: 18.3860, lon: -66.1337 },
+        { name: "Gurabo", lat: 18.2541, lon: -65.9766 },
+        { name: "Hatillo", lat: 18.4844, lon: -66.8299 },
+        { name: "Hormigueros", lat: 18.1416, lon: -67.1277 },
+        { name: "Humacao", lat: 18.1515, lon: -65.8164 },
+        { name: "Isabela", lat: 18.5008, lon: -67.0242 },
+        { name: "Jayuya", lat: 18.2197, lon: -66.5913 },
+        { name: "Juana Díaz", lat: 18.0519, lon: -66.5071 },
+        { name: "Juncos", lat: 18.2272, lon: -65.9196 },
+        { name: "Lajas", lat: 18.0458, lon: -67.0599 },
+        { name: "Lares", lat: 18.2955, lon: -66.8766 },
+        { name: "Las Marías", lat: 18.2508, lon: -66.9938 },
+        { name: "Las Piedras", lat: 18.1858, lon: -65.8649 },
+        { name: "Loíza", lat: 18.4330, lon: -65.8793 },
+        { name: "Luquillo", lat: 18.3797, lon: -65.7163 },
+        { name: "Manatí", lat: 18.4275, lon: -66.4927 },
+        { name: "Maricao", lat: 18.1802, lon: -66.9816 },
+        { name: "Maunabo", lat: 17.9710, lon: -65.8999 },
+        { name: "Mayagüez", lat: 18.2013, lon: -67.1390 },
+        { name: "Moca", lat: 18.3930, lon: -67.1130 },
+        { name: "Morovis", lat: 18.3277, lon: -66.4060 },
+        { name: "Naguabo", lat: 18.2108, lon: -65.7352 },
+        { name: "Naranjito", lat: 18.3019, lon: -66.2449 },
+        { name: "Orocovis", lat: 18.2241, lon: -66.3914 },
+        { name: "Patillas", lat: 17.9727, lon: -66.0157 },
+        { name: "Peñuelas", lat: 18.0572, lon: -66.7226 },
+        { name: "Ponce", lat: 18.0111, lon: -66.6141 },
+        { name: "Quebradillas", lat: 18.4721, lon: -66.9352 },
+        { name: "Rincón", lat: 18.3402, lon: -67.2500 },
+        { name: "Río Grande", lat: 18.3801, lon: -65.8174 },
+        { name: "Sabana Grande", lat: 18.0808, lon: -66.9552 },
+        { name: "Salinas", lat: 17.9727, lon: -66.2974 },
+        { name: "San Germán", lat: 18.0807, lon: -67.0411 },
+        { name: "San Juan", lat: 18.4655, lon: -66.1057 },
+        { name: "San Lorenzo", lat: 18.1897, lon: -65.9727 },
+        { name: "San Sebastián", lat: 18.3438, lon: -66.9938 },
+        { name: "Santa Isabel", lat: 17.9858, lon: -66.3914 },
+        { name: "Toa Alta", lat: 18.3880, lon: -66.2488 },
+        { name: "Toa Baja", lat: 18.4321, lon: -66.2218 },
+        { name: "Trujillo Alto", lat: 18.3537, lon: -66.0216 },
+        { name: "Utuado", lat: 18.2655, lon: -66.7005 },
+        { name: "Vega Alta", lat: 18.4127, lon: -66.3274 },
+        { name: "Vega Baja", lat: 18.4441, lon: -66.3877 },
+        { name: "Vieques", lat: 18.1208, lon: -65.4500 },
+        { name: "Villalba", lat: 18.1216, lon: -66.4938 },
+        { name: "Yabucoa", lat: 18.0505, lon: -65.8793 },
+        { name: "Yauco", lat: 18.0344, lon: -66.8502 }
+        ];
+
+        document.getElementById('addClientBtn').addEventListener('click', function() {
+            openAddClientPopup();
+        });
+
+        function openAddClientPopup(formVals = ["", "", "", "", ""], cityIndex = 0) 
+        {
+            let cityOptions = prCities.map((c, i) =>
+                `<option value="${c.lat},${c.lon}" ${i === cityIndex ? "selected" : ""}>${c.name}</option>`
+            ).join('');
+            Swal.fire({
+                title: 'Add New Client',
+                html:
+                    `<input id="swal-name" class="swal2-input" placeholder="Name" value="${formVals[0] || ""}">` +
+                    `<input id="swal-address" class="swal2-input" placeholder="Address" value="${formVals[1] || ""}">` +
+                    `<input id="swal-phone" class="swal2-input" placeholder="Phone" value="${formVals[2] || ""}">` +
+                    `<label style="display:block;margin:8px 0 2px 0;font-size:0.95em;">Select client's city (for map):</label>
+                    <select id="swal-city" class="swal2-input" style="width:90%">${cityOptions}</select>
+                    <button id="swal-map-btn" type="button" class="swal2-confirm swal2-styled" style="margin-top:8px;">Select Client Coords on Map</button>
+                    <input id="swal-lat" class="swal2-input" placeholder="Latitude" readonly style="margin-top:8px;" value="${formVals[3] || ""}">
+                    <input id="swal-lon" class="swal2-input" placeholder="Longitude" readonly value="${formVals[4] || ""}">`,
+                showCancelButton: true,
+                confirmButtonText: 'Save',
+                cancelButtonText: 'Cancel',
+                didOpen: () => {
+                    $('#swal-city').select2({ dropdownParent: $('.swal2-container'), width: '100%', placeholder: "Select city..." });
+                    document.getElementById('swal-map-btn').onclick = function () {
+                        // Save current form values before opening map
+                        const currentVals = [
+                            document.getElementById('swal-name').value,
+                            document.getElementById('swal-address').value,
+                            document.getElementById('swal-phone').value,
+                            document.getElementById('swal-lat').value,
+                            document.getElementById('swal-lon').value
+                        ];
+                        const citySel = document.getElementById('swal-city');
+                        const [lat, lon] = citySel.value.split(',').map(Number);
+                        const cityIdx = citySel.selectedIndex;
+                        Swal.fire({
+                            title: "Now select client's coords",
+                            html: '<div id="mapid" style="height:300px;width:100%;margin-bottom:8px;"></div><div style="font-size:0.95em;">Click on the map to select the client\'s location.</div>',
+                            showCancelButton: true,
+                            cancelButtonText: "Cancel",
+                            showConfirmButton: false,
+                            didOpen: () => {
+                                let map = L.map('mapid').setView([lat, lon], 13);
+                                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                                    maxZoom: 19,
+                                    attribution: '© OpenStreetMap'
+                                }).addTo(map);
+                                let marker;
+                                map.on('click', function (e) {
+                                    if (marker) marker.setLatLng(e.latlng);
+                                    else marker = L.marker(e.latlng).addTo(map);
+                                    // Update lat/lon in the background popup
+                                    Swal.close();
+                                    setTimeout(() => {
+                                        // Reopen the main popup with updated coords, keeping all other fields
+                                        const updatedVals = [...currentVals];
+                                        updatedVals[3] = e.latlng.lat.toFixed(6);
+                                        updatedVals[4] = e.latlng.lng.toFixed(6);
+                                        openAddClientPopup(updatedVals, cityIdx);
+                                    }, 300);
+                                });
+                            }
+                        });
+                    };
+                },
+                focusConfirm: false,
+                preConfirm: () => {
+                    return [
+                        document.getElementById('swal-name').value,
+                        document.getElementById('swal-address').value,
+                        document.getElementById('swal-phone').value,
+                        document.getElementById('swal-lat').value,
+                        document.getElementById('swal-lon').value
+                    ]
+                }
+            }).then(result => {
+                if (result.isConfirmed && result.value && result.value[0]) {
+                    addClient(result.value[0], result.value[1], result.value[2], result.value[3] || null, result.value[4] || null);
+                    // Refresh client list
+                    const clients = getClients();
+                    const select = document.getElementById('clientSelect');
+                    select.innerHTML = '<option value="">-- Select a client --</option>';
+                    clients.forEach(c => {
+                        const opt = document.createElement('option');
+                        opt.value = c[0];
+                        opt.textContent = `${c[1]} (${c[2]})`;
+                        select.appendChild(opt);
+                    });
+                    Swal.fire('Success', 'Client added!', 'success');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
