@@ -6,16 +6,16 @@ A modern, interactive web app to help you plan the best days and times to mow yo
 
 ## 🌟 Features
 
-- **Location-based Forecast:** Enter your location manually, select from a Puerto Rico city dropdown, or use your device’s GPS for accurate, local weather.
+- **Location-based Forecast:** Enter your location manually, select any of Puerto Rico's 78 municipalities from a dropdown, or use your device’s GPS for accurate, local weather.
 - **Weather Condition Icons:** Instantly see today’s weather and the top mowing days with friendly icons and descriptions.
-- **Top 3 Mowing Days:** Get the best three days for mowing this week, with recommended hours based on rain, temperature, and UV index, all shown in easy-to-read cards.
+- **Top 3 Mowing Days:** Get the best three days for mowing this week, with recommended daylight hours (between sunrise and sunset) based on rain, temperature, and UV index, all shown in easy-to-read cards.
 - **Interactive Map:** View your location on a map, adjust by clicking anywhere, and see a pin for your coordinates.
-- **Bilingual Support:** Instantly switch between English and Spanish.
+- **Bilingual Support:** Instantly switch between English and Spanish (your choice is remembered).
 - **Live Rain Radar:** See real-time rain movement for your area, with zoom and fullscreen options.
 - **Responsive Design:** Works great on desktop and mobile devices.
-- **Dark Mode:** Toggle between light and dark themes for comfortable viewing.
 - **URL Parameters:** Open the page with specific coordinates using `?lat=...&lon=...` in the URL.
-- **Remembers Last Location:** Your last used coordinates are saved for your next visit.
+- **Remembers Last Location:** Your last used coordinates are saved in your browser for your next visit (URL parameters take priority).
+- **Clients & Services:** Keep a list of clients with address, phone and map coordinates. Data is stored locally in your browser (SQLite via sql.js, saved to `localStorage`), so it stays on this device and browser only.
 
 ---
 
@@ -35,6 +35,18 @@ A modern, interactive web app to help you plan the best days and times to mow yo
 2. **Open `index.html` in your browser**
 
 No build steps or dependencies required!
+
+---
+
+## 📁 Project Structure
+
+| File | Purpose |
+|---|---|
+| `index.html` | Forecast planner: location, weather, recommendations, radar |
+| `client_service.html` | Client list and service history |
+| `init_sql.js` | Client database (sql.js) with `localStorage` persistence |
+| `pr_cities.js` | Puerto Rico municipalities with coordinates, plus shared helpers |
+| `Images/` | Icons and screenshots |
 
 ---
 
