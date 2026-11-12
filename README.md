@@ -21,6 +21,7 @@ Know at a glance whether today is a good day to mow, and at what time. A mobile-
 - **Clients:** name, phone, address, town and an exact pin on the map. Each client shows their **next good day** and last service. Log services, get directions, or open the forecast at the client's address.
 - **Backup:** export and import your clients as a JSON file.
 - **Settings:** English or Spanish, °C/km/h/mm or °F/mph/in, and light, dark or automatic theme. Everything is remembered.
+- **Installable app (PWA):** add it to your phone's home screen or install it on desktop from **Settings → Install the app**. It opens without a connection and shows the last forecast it loaded.
 - **Shareable links:** open the app at specific coordinates with `?lat=18.23&lon=-65.92`.
 
 Clients are stored only in your browser (`localStorage`). They never leave your device unless you export them.
@@ -67,6 +68,8 @@ npm test
 
 Publishing on GitHub Pages: **Settings → Pages**, source **main** branch, root folder.
 
+The service worker fetches app files from the network first, so a new deploy shows up on the next load. When you add, rename or remove a file under `js/` or `css/`, update `SHELL_FILES` in `sw.js` and bump `VERSION`.
+
 ---
 
 ## Project structure
@@ -85,6 +88,11 @@ Publishing on GitHub Pages: **Settings → Pages**, source **main** branch, root
 | `js/store.js` | `localStorage` persistence and migration from the old version |
 | `js/i18n.js` | English and Spanish strings, dates and units |
 | `js/cities.js` | Puerto Rico municipalities with coordinates |
+| `js/pwa.js` | Service worker registration, install button and offline banner |
+| `sw.js` | Service worker: offline app files, cached libraries and last forecast |
+| `manifest.webmanifest` | App name, icons and colors for installing |
+| `Images/icons/` | App icons (regular, maskable and Apple touch icon) |
+| `scripts/make_icons.py` | Regenerates the app icons (needs Pillow) |
 | `tests/` | Unit tests for the score (`node --test`) |
 | `client_service.html` | Redirect from the old clients page |
 

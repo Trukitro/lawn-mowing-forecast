@@ -273,6 +273,7 @@ export function initForecast() {
     });
     $$(".tabs [data-tab]").forEach(b => b.addEventListener("click", () => showTab(b.dataset.tab)));
     on("location", () => loadForecast());
+    on("online", () => { if (state.forecastError) loadForecast({ force: true }); });
     on("settings", renderForecast);
     on("clients", () => { if (state.tab === "map") renderMap(); });
 }

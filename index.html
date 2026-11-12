@@ -7,7 +7,12 @@
     <meta name="description" content="Plan the best days and hours to mow, based on rain, wet grass, heat, UV and wind.">
     <meta name="theme-color" content="#2e7d32">
     <link rel="icon" href="Images/sun_and_grass.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="Images/Icon.png">
+    <link rel="icon" href="Images/icons/favicon-48.png" type="image/png" sizes="48x48">
+    <link rel="apple-touch-icon" href="Images/icons/apple-touch-icon.png">
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Mowing">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
@@ -40,6 +45,10 @@
             <button type="button" data-lang="en">EN</button>
         </div>
     </header>
+
+    <div id="offlineBanner" class="offline-banner" role="status" hidden>
+        <i class="ti ti-cloud-off" aria-hidden="true"></i><span data-i18n="offline">You're offline. Showing the last saved forecast.</span>
+    </div>
 
     <nav class="nav" aria-label="Main">
         <div class="nav-inner">
@@ -141,6 +150,13 @@
                             <button type="button" data-value="dark" data-i18n="settings.dark">Dark</button>
                         </div>
                     </div>
+                </div>
+
+                <div class="card" id="installCard" hidden>
+                    <h2 class="section-title" data-i18n="install.title">Install the app</h2>
+                    <p class="small muted" style="margin-top:0" data-i18n="install.desc"></p>
+                    <p class="small" id="installHint" style="margin:0 0 8px"></p>
+                    <button type="button" class="btn btn-primary" id="installBtn" hidden><i class="ti ti-download" aria-hidden="true"></i><span data-i18n="install.button">Install</span></button>
                 </div>
 
                 <div class="card">

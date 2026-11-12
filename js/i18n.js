@@ -142,7 +142,13 @@ const strings = {
         "settings.about": "About",
         "settings.aboutDesc": "Weather by Open-Meteo, maps by OpenStreetMap, radar by RainViewer. MIT license.",
         "settings.source": "Source code",
-        migrated: "Your clients were moved to the new storage"
+        migrated: "Your clients were moved to the new storage",
+        offline: "You're offline. Showing the last saved forecast.",
+        "install.title": "Install the app",
+        "install.desc": "Open it from your home screen like any other app. It keeps working without a connection, with the last forecast it loaded.",
+        "install.button": "Install",
+        "install.ios": "On iPhone or iPad: tap Share, then Add to Home Screen.",
+        "install.done": "App installed"
     },
     es: {
         appName: "Pronóstico de corte",
@@ -285,7 +291,13 @@ const strings = {
         "settings.about": "Acerca de",
         "settings.aboutDesc": "Tiempo de Open-Meteo, mapas de OpenStreetMap y radar de RainViewer. Licencia MIT.",
         "settings.source": "Código fuente",
-        migrated: "Tus clientes se pasaron al nuevo almacenamiento"
+        migrated: "Tus clientes se pasaron al nuevo almacenamiento",
+        offline: "Sin conexión. Se muestra el último pronóstico guardado.",
+        "install.title": "Instalar la app",
+        "install.desc": "Ábrela desde tu pantalla de inicio como cualquier otra app. Sigue funcionando sin conexión con el último pronóstico que cargó.",
+        "install.button": "Instalar",
+        "install.ios": "En iPhone o iPad: toca Compartir y luego Añadir a pantalla de inicio.",
+        "install.done": "App instalada"
     }
 };
 

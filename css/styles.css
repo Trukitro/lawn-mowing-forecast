@@ -683,3 +683,19 @@ dialog.sheet::backdrop { background: rgba(10, 15, 8, 0.45); animation: fade 0.2s
     .chip { max-width: none; flex: 1; justify-content: flex-start; }
     .chip .ti-chevron-down { margin-left: auto; }
 }
+
+.offline-banner {
+    max-width: 1080px;
+    margin: 0 auto 8px;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--fair-text);
+    background: var(--fair-bg);
+    border-radius: var(--radius-sm);
+}
+.offline-banner[hidden] { display: none; }
+.offline-banner .ti { font-size: 18px; }
+@media (max-width: 1112px) { .offline-banner { margin: 0 16px 8px; } }
