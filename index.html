@@ -2,678 +2,235 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Lawn Mowing Forecast Tool</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="pr_cities.js"></script>
-    <style>
-        body {
-        font-family: Arial, sans-serif;
-        background: #eef2f3;
-        margin: 0;
-        padding: 20px;
-        }
-        .card {
-        background: #fff;
-        padding: 20px;
-        margin-bottom: 20px;
-        border-radius: 10px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-        }
-        h2 {
-        margin-top: 0;
-        }
-        input, button {
-        padding: 10px;
-        margin: 5px 5px 10px 0;
-        border-radius: 5px;
-        border: 1px solid #ccc;
-        font-size: 1rem;
-        }
-        button {
-        background-color: #28a745;
-        color: white;
-        cursor: pointer;
-        }
-        button:hover {
-        background-color: #218838;
-        }
-        ul {
-        padding-left: 18px;
-        }
-        .recommendation {
-        font-size: 1.1em;
-        font-weight: bold;
-        color: #333;
-        }
-        iframe {
-        border: none;
-        border-radius: 10px;
-        }
-        .link {
-        margin-top: 5px;
-        display: inline-block;
-        }
-        .weather-line {
-        display: flex;
-        align-items: center;
-        margin: 4px 0;
-        }
-        .weather-line span {
-        margin-left: 8px;
-        }
-        .planner-controls {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-top: 10px;
-        }
-        .planner-controls input {
-        flex: 1 1 140px;
-        }
-        .planner-controls button {
-        white-space: nowrap;
-        }
-        .error {
-        color: red;
-        font-size: 0.9em;
-        margin-top: -5px;
-        margin-bottom: 10px;
-        }
-        @media (max-width: 600px) {
-            .planner-controls {
-                flex-direction: column;
-            }
-            .planner-controls input, .planner-controls button {
-                width: 100%;
-            }
-        }
-        #rainList {
-        padding: 0;
-        margin: 0;
-        }
-        .rain-card {
-        margin-bottom: 18px;
-        padding: 16px 14px;
-        border-radius: 12px;
-        background: linear-gradient(90deg, #e0f7fa 0%, #f7f9fa 100%);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-        list-style: none;
-        transition: box-shadow 0.2s;
-        }
-        .rain-card:hover {
-        box-shadow: 0 4px 16px rgba(0,0,0,0.13);
-        background: linear-gradient(90deg, #b2ebf2 0%, #f7f9fa 100%);
-        }
-        .rain-card .rain-header {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        }
-        .rain-card .rain-icon {
-        font-size: 2em;
-        }
-        .rain-card .rain-date {
-        font-weight: bold;
-        font-size: 1.15em;
-        }
-        .rain-card .rain-desc {
-        color: #555;
-        font-size: 1em;
-        }
-        .rain-card .rain-amount {
-        margin-top: 8px;
-        color: #007bff;
-        font-weight: 500;
-        }
-        .rain-card .rain-hours {
-        margin-top: 8px;
-        font-size: 0.98em;
-        color: #2d7a2d;
-        }
-        .button-link {
-            display: inline-block;
-            background-color: #28a745;
-            color: #fff !important;
-            padding: 10px 18px;
-            border-radius: 5px;
-            border: none;
-            font-size: 1rem;
-            font-weight: bold;
-            text-decoration: none;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .button-link:hover {
-            background-color: #218838;
-            text-decoration: none;
-            color: #fff !important;
-        }
-        .lang-btn {
-            font-size: 0.6em;
-            vertical-align: middle;
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Lawn Mowing Forecast</title>
+    <meta name="description" content="Plan the best days and hours to mow, based on rain, wet grass, heat, UV and wind.">
+    <meta name="theme-color" content="#2e7d32">
+    <link rel="icon" href="Images/sun_and_grass.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="Images/Icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <script>
+        // Apply the saved theme before the first paint to avoid a flash
+        try {
+            var s = JSON.parse(localStorage.getItem("lawnMowing.settings") || "{}");
+            if (s.theme === "light" || s.theme === "dark") document.documentElement.dataset.theme = s.theme;
+        } catch (e) {}
+    </script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+    <script type="module" src="js/app.js"></script>
 </head>
 <body>
-
-    <div class="card">
-        <h2>🌱 <span data-i18n="Lawn Mowing Planner">Lawn Mowing Planner</span>
-            <button type="button" id="langBtn" class="lang-btn" aria-label="Translate">🌐 <span data-i18n="Translate">Translate</span></button>
-        </h2>
-        <a href="client_service.html" class="button-link">👥 <span data-i18n="View Clients & Services">View Clients & Services</span></a>
-        <p><span data-i18n="Default location:">Default location:</span> <strong>Puerto Rico</strong>/Juncos. <span data-i18n="You can also enter your location below manually or use your current device location.">You can also enter your location below manually or use your current device location.</span></p>
-        <div style="margin-bottom:12px;">
-            <label for="pr-cities" style="font-weight:bold;" data-i18n="Select a City in Puerto Rico:">Select a City in Puerto Rico:</label>
-            <select id="pr-cities" name="pr-cities" style="margin-left:8px; padding:6px 10px; border-radius:5px;">
-                <option value="" data-i18n="--Choose a city--">--Choose a city--</option>
-            </select>
+    <header class="app-header">
+        <div class="brand">
+            <img src="Images/sun_and_grass.svg" alt="" width="30" height="30">
+            <span data-i18n="appName">Lawn Mowing Forecast</span>
         </div>
-        <div class="planner-controls">
-            <input type="text" id="lat" inputmode="decimal" data-i18n-placeholder="Latitude (e.g. 18.4663)" placeholder="Latitude (e.g. 18.4663)">
-            <input type="text" id="lon" inputmode="decimal" data-i18n-placeholder="Longitude (e.g. -66.1057)" placeholder="Longitude (e.g. -66.1057)">
-            <button type="button" id="updateBtn">🔄 <span data-i18n="Update Location">Update Location</span></button>
-            <button type="button" id="myLocationBtn">📍 <span data-i18n="Use My Location">Use My Location</span></button>
+        <button type="button" class="chip" id="locationChip" data-i18n-aria="changeLocation" aria-label="Change location">
+            <i class="ti ti-map-pin" aria-hidden="true"></i>
+            <span id="locationName">…</span>
+            <i class="ti ti-chevron-down" aria-hidden="true"></i>
+        </button>
+        <div class="segmented" id="langSwitch" role="group" aria-label="Language">
+            <button type="button" data-lang="es">ES</button>
+            <button type="button" data-lang="en">EN</button>
         </div>
-        <div id="error" class="error" role="alert"></div>
-        <div class="link">
-            <a href="https://www.google.com/maps" target="_blank" rel="noopener" data-i18n="Find your coordinates with Google Maps">Find your coordinates with Google Maps</a>
+    </header>
+
+    <nav class="nav" aria-label="Main">
+        <div class="nav-inner">
+            <a href="#forecast" data-view="forecast"><i class="ti ti-sun" aria-hidden="true"></i><span data-i18n="nav.forecast">Forecast</span></a>
+            <a href="#clients" data-view="clients"><i class="ti ti-users" aria-hidden="true"></i><span data-i18n="nav.clients">Clients</span></a>
+            <a href="#settings" data-view="settings"><i class="ti ti-settings" aria-hidden="true"></i><span data-i18n="nav.settings">Settings</span></a>
         </div>
+    </nav>
 
-        <p><strong>📌 <span data-i18n="Current Coordinates:">Current Coordinates:</span></strong> <span id="coords"></span></p>
-        <p><strong>🌍 <span data-i18n="City:">City:</span></strong> <span id="city">Fetching...</span></p>
-        <div id="miniMap" style="width:100%;height:250px;margin-top:10px;border-radius:10px;"></div>
-    </div>
+    <main>
+        <section id="view-forecast" class="view" aria-labelledby="forecastHeading">
+            <h1 id="forecastHeading" class="sr-only" data-i18n="nav.forecast">Forecast</h1>
+            <div class="forecast-grid">
+                <div class="stack">
+                    <div id="verdict" class="verdict" aria-live="polite">
+                        <div class="skeleton" style="height:22px;width:45%"></div>
+                        <div class="skeleton" style="height:30px;width:75%;margin-top:10px"></div>
+                        <div class="skeleton" style="height:18px;width:60%;margin-top:14px"></div>
+                    </div>
 
-    <div class="card">
-        <h2>☀️ <span data-i18n="Weather Forecast (Today)">Weather Forecast (Today)</span></h2>
-        <div id="weather">
-            <div class="weather-line" id="weather-condition">⏳ <span>Loading...</span></div>
-            <div class="weather-line">🌡️ <span id="temp">Loading...</span></div>
-            <div class="weather-line">🌬️ <span id="wind">Loading...</span></div>
-            <div class="weather-line">☔️ <span id="rain">Loading...</span></div>
-            <div class="weather-line">💧 <span id="humidity">Loading...</span></div>
-            <div class="weather-line">🌞 <span id="uv">Loading...</span></div>
-        </div>
-    </div>
+                    <div class="card">
+                        <h2 class="section-title" data-i18n="next7">Next 7 days</h2>
+                        <div class="days" id="days"><div class="skeleton" style="height:96px;grid-column:1/-1"></div></div>
+                    </div>
 
-    <div class="card">
-        <h2>📅 <span data-i18n="Service Recommendation">Service Recommendation</span></h2>
-        <p id="recommendation" class="recommendation">Checking conditions...</p>
-    </div>
+                    <div class="card">
+                        <h2 class="section-title"><span data-i18n="daylightHours">Daylight hours</span><span id="hoursDay" class="muted"></span></h2>
+                        <div class="hourbar" id="hourbar"><div class="skeleton" style="flex:1"></div></div>
+                        <div class="hour-axis" id="hourAxis"></div>
+                        <div class="legend">
+                            <span><i style="background:var(--good)"></i><span data-i18n="legend.good">Ideal</span></span>
+                            <span><i style="background:var(--fair)"></i><span data-i18n="legend.fair">Fair</span></span>
+                            <span><i style="background:var(--bad)"></i><span data-i18n="legend.bad">Avoid</span></span>
+                            <span><i style="background:var(--text-3);opacity:.35"></i><span data-i18n="legend.past">Past</span></span>
+                        </div>
+                        <div class="hour-detail" id="hourDetail"></div>
+                    </div>
 
-    <div class="card">
-        <h2>📈 <span data-i18n="Top 3 Best Mowing Days This Week">Top 3 Best Mowing Days This Week</span></h2>
-        <p id="bestDay" class="recommendation">Calculating...</p>
-        <ul id="rainList"></ul>
-    </div>
+                    <div class="metrics" id="metrics"></div>
+                </div>
 
-    <div class="card">
-        <h2>☂️ <span data-i18n="Live Rain Radar">Live Rain Radar</span></h2>
-        <iframe id="radarMap" src="" width="100%" height="400" allowfullscreen loading="lazy"></iframe>
-    </div>
+                <div class="card forecast-side">
+                    <div class="tabs" role="tablist">
+                        <button type="button" role="tab" id="tab-radar" aria-controls="panel-radar" aria-selected="true" data-tab="radar"><i class="ti ti-radar" aria-hidden="true"></i><span data-i18n="tab.radar">Radar</span></button>
+                        <button type="button" role="tab" id="tab-map" aria-controls="panel-map" aria-selected="false" data-tab="map"><i class="ti ti-map" aria-hidden="true"></i><span data-i18n="tab.map">Map</span></button>
+                        <button type="button" role="tab" id="tab-hourly" aria-controls="panel-hourly" aria-selected="false" data-tab="hourly"><i class="ti ti-list-details" aria-hidden="true"></i><span data-i18n="tab.hourly">Hourly</span></button>
+                    </div>
+                    <div class="tab-panel" id="panel-radar" role="tabpanel" aria-labelledby="tab-radar">
+                        <iframe id="radar" class="radar" title="Rain radar" loading="lazy" allowfullscreen></iframe>
+                    </div>
+                    <div class="tab-panel" id="panel-map" role="tabpanel" aria-labelledby="tab-map" hidden>
+                        <div id="forecastMap" class="map"></div>
+                        <p class="small muted" data-i18n="mapHint">Tap the map to change the location.</p>
+                    </div>
+                    <div class="tab-panel" id="panel-hourly" role="tabpanel" aria-labelledby="tab-hourly" hidden>
+                        <div style="overflow-x:auto"><table class="hours-table" id="hoursTable"></table></div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-    <script>
-        const DEFAULT_LOCATION = { lat: 18.2272, lon: -65.9196 }; // Juncos, PR
-        const LOCATION_KEY = "lawnMowing.lastLocation";
-        const LANG_KEY = "lawnMowing.lang";
+        <section id="view-clients" class="view" hidden aria-labelledby="clientsHeading">
+            <h1 class="page-title" id="clientsHeading">
+                <span data-i18n="clients.title">Clients</span>
+                <button type="button" class="btn btn-primary" id="newClientBtn"><i class="ti ti-plus" aria-hidden="true"></i><span data-i18n="clients.new">New</span></button>
+            </h1>
+            <div class="card">
+                <div class="search" id="clientSearchWrap">
+                    <i class="ti ti-search" aria-hidden="true"></i>
+                    <input type="search" class="input" id="clientSearch" data-i18n-placeholder="clients.search" data-i18n-aria="clients.search" placeholder="Search by name or town" aria-label="Search by name or town">
+                </div>
+                <ul class="client-list" id="clientList"></ul>
+            </div>
+        </section>
 
-        let lat = DEFAULT_LOCATION.lat;
-        let lon = DEFAULT_LOCATION.lon;
-        let isSpanish = false;
-        let miniMap;              // Leaflet map
-        let weatherData = null;   // last successful Open-Meteo response
-        let weatherFailed = false;
-        let cityText = { key: "Fetching..." }; // { key } is translated, { name } is shown as-is
-        let errorKey = "";
-        let weatherRequestId = 0;
-        let cityRequestId = 0;
-        let cityTimer = null;
-
-        const weatherCodeMap = {
-            0: { icon: "☀️", desc: "Clear sky", es: "Cielo despejado" },
-            1: { icon: "🌤️", desc: "Mainly clear", es: "Mayormente despejado" },
-            2: { icon: "⛅", desc: "Partly cloudy", es: "Parcialmente nublado" },
-            3: { icon: "☁️", desc: "Overcast", es: "Nublado" },
-            45: { icon: "🌫️", desc: "Fog", es: "Niebla" },
-            48: { icon: "🌫️", desc: "Depositing rime fog", es: "Niebla con escarcha" },
-            51: { icon: "🌦️", desc: "Light drizzle", es: "Llovizna ligera" },
-            53: { icon: "🌦️", desc: "Drizzle", es: "Llovizna" },
-            55: { icon: "🌦️", desc: "Dense drizzle", es: "Llovizna densa" },
-            56: { icon: "🌧️", desc: "Freezing drizzle", es: "Llovizna helada" },
-            57: { icon: "🌧️", desc: "Dense freezing drizzle", es: "Llovizna helada densa" },
-            61: { icon: "🌦️", desc: "Slight rain", es: "Lluvia ligera" },
-            63: { icon: "🌧️", desc: "Rain", es: "Lluvia" },
-            65: { icon: "🌧️", desc: "Heavy rain", es: "Lluvia fuerte" },
-            66: { icon: "🌧️", desc: "Freezing rain", es: "Lluvia helada" },
-            67: { icon: "🌧️", desc: "Heavy freezing rain", es: "Lluvia helada fuerte" },
-            71: { icon: "🌨️", desc: "Slight snow fall", es: "Nevada ligera" },
-            73: { icon: "🌨️", desc: "Snow fall", es: "Nevada" },
-            75: { icon: "❄️", desc: "Heavy snow fall", es: "Nevada fuerte" },
-            77: { icon: "❄️", desc: "Snow grains", es: "Granos de nieve" },
-            80: { icon: "🌦️", desc: "Slight rain showers", es: "Chubascos ligeros" },
-            81: { icon: "🌧️", desc: "Rain showers", es: "Chubascos" },
-            82: { icon: "🌧️", desc: "Violent rain showers", es: "Chubascos violentos" },
-            85: { icon: "🌨️", desc: "Slight snow showers", es: "Chubascos de nieve ligeros" },
-            86: { icon: "❄️", desc: "Heavy snow showers", es: "Chubascos de nieve fuertes" },
-            95: { icon: "⛈️", desc: "Thunderstorm", es: "Tormenta eléctrica" },
-            96: { icon: "⛈️", desc: "Thunderstorm with hail", es: "Tormenta con granizo" },
-            99: { icon: "⛈️", desc: "Thunderstorm with heavy hail", es: "Tormenta con granizo fuerte" }
-        };
-
-        const translations = {
-            es: {
-                "Lawn Mowing Planner": "Planificador de Corte de Césped",
-                "Translate": "Traducir",
-                "View Clients & Services": "Ver clientes y servicios",
-                "Default location:": "Ubicación predeterminada:",
-                "You can also enter your location below manually or use your current device location.": "También puede ingresar su ubicación manualmente o usar la ubicación de su dispositivo.",
-                "Select a City in Puerto Rico:": "Seleccione un municipio de Puerto Rico:",
-                "--Choose a city--": "--Elija un municipio--",
-                "Latitude (e.g. 18.4663)": "Latitud (ej. 18.4663)",
-                "Longitude (e.g. -66.1057)": "Longitud (ej. -66.1057)",
-                "Update Location": "Actualizar ubicación",
-                "Use My Location": "Usar mi ubicación",
-                "Find your coordinates with Google Maps": "Encuentra tus coordenadas con Google Maps",
-                "Current Coordinates:": "Coordenadas actuales:",
-                "City:": "Ciudad:",
-                "Fetching...": "Buscando...",
-                "Unknown location": "Ubicación desconocida",
-                "Unable to retrieve": "No se pudo obtener",
-                "Weather Forecast (Today)": "Pronóstico del tiempo (hoy)",
-                "Loading...": "Cargando...",
-                "Unknown": "Desconocido",
-                "Wind:": "Viento:",
-                "Rain:": "Lluvia:",
-                "Humidity:": "Humedad:",
-                "UV Index:": "Índice UV:",
-                "Service Recommendation": "Recomendación de servicio",
-                "Checking conditions...": "Verificando condiciones...",
-                "Top 3 Best Mowing Days This Week": "Top 3 mejores días para cortar césped esta semana",
-                "Calculating...": "Calculando...",
-                "Live Rain Radar": "Radar de lluvia en vivo",
-                "Ideal day for mowing — no or very little rain.": "Día ideal para cortar césped — sin lluvia o muy poca.",
-                "Light rain expected. Mowing possible if urgent.": "Se espera lluvia ligera. Corte posible si es urgente.",
-                "Heavy rain today. Recommend rescheduling.": "Lluvia fuerte hoy. Se recomienda reprogramar.",
-                "Best day:": "Mejor día:",
-                "Dry": "Seco",
-                "Light rain": "Lluvia ligera",
-                "Rain": "Lluvia",
-                "Best hours:": "Mejores horas:",
-                "No ideal daylight hours (rain, heat or UV).": "Sin horas ideales de día (lluvia, calor o UV).",
-                "Could not load weather data. Please try again later.": "No se pudieron cargar los datos del tiempo. Inténtelo más tarde.",
-                "Please enter valid coordinates (latitude -90 to 90, longitude -180 to 180).": "Ingrese coordenadas válidas (latitud -90 a 90, longitud -180 a 180).",
-                "Location access denied or unavailable.": "Acceso a la ubicación denegado o no disponible.",
-                "Geolocation not supported.": "Geolocalización no soportada."
-            }
-        };
-
-        // Translate a UI string into the current language
-        function t(key) {
-            return isSpanish ? (translations.es[key] ?? key) : key;
-        }
-
-        function storageGet(key) {
-            try { return localStorage.getItem(key); } catch (e) { return null; }
-        }
-
-        function storageSet(key, value) {
-            try { localStorage.setItem(key, value); } catch (e) { /* storage unavailable */ }
-        }
-
-        function isValidCoord(la, lo) {
-            return Number.isFinite(la) && Number.isFinite(lo) && Math.abs(la) <= 90 && Math.abs(lo) <= 180;
-        }
-
-        // ---------- Language ----------
-
-        function applyStaticTranslations() {
-            document.documentElement.lang = isSpanish ? "es" : "en";
-            document.querySelectorAll("[data-i18n]").forEach(el => {
-                el.textContent = t(el.dataset.i18n);
-            });
-            document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
-                el.placeholder = t(el.dataset.i18nPlaceholder);
-            });
-        }
-
-        function renderAll() {
-            applyStaticTranslations();
-            renderError();
-            renderCity();
-            renderWeather();
-        }
-
-        function toggleLanguage() {
-            isSpanish = !isSpanish;
-            storageSet(LANG_KEY, isSpanish ? "es" : "en");
-            renderAll();
-        }
-
-        // ---------- Location ----------
-
-        function setError(key) {
-            errorKey = key;
-            renderError();
-        }
-
-        function renderError() {
-            document.getElementById('error').textContent = errorKey ? t(errorKey) : "";
-        }
-
-        function setLocation(newLat, newLon) {
-            lat = newLat;
-            lon = newLon;
-            setError("");
-            document.getElementById('lat').value = lat.toFixed(4);
-            document.getElementById('lon').value = lon.toFixed(4);
-            document.getElementById('coords').textContent = `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
-            storageSet(LOCATION_KEY, JSON.stringify({ lat, lon }));
-            fetchWeather();
-            scheduleFetchCity();
-            showMiniMap();
-        }
-
-        function updateCoords() {
-            const newLat = parseFloat(document.getElementById('lat').value);
-            const newLon = parseFloat(document.getElementById('lon').value);
-            if (!isValidCoord(newLat, newLon)) {
-                setError("Please enter valid coordinates (latitude -90 to 90, longitude -180 to 180).");
-                return;
-            }
-            setLocation(newLat, newLon);
-        }
-
-        function useMyLocation() {
-            if (!navigator.geolocation) {
-                setError("Geolocation not supported.");
-                return;
-            }
-            navigator.geolocation.getCurrentPosition(
-                position => setLocation(position.coords.latitude, position.coords.longitude),
-                () => setError("Location access denied or unavailable.")
-            );
-        }
-
-        function showMiniMap() {
-            const popup = `<b>Lat:</b> ${lat.toFixed(4)}<br><b>Lon:</b> ${lon.toFixed(4)}`;
-            if (!miniMap) {
-                miniMap = L.map('miniMap').setView([lat, lon], 13);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    maxZoom: 19,
-                    attribution: '© OpenStreetMap'
-                }).addTo(miniMap);
-                miniMap.marker = L.marker([lat, lon]).addTo(miniMap);
-                miniMap.on('click', e => setLocation(e.latlng.lat, e.latlng.lng));
-            } else {
-                miniMap.setView([lat, lon], miniMap.getZoom());
-                miniMap.marker.setLatLng([lat, lon]);
-            }
-            miniMap.marker.bindPopup(popup).openPopup();
-        }
-
-        // Nominatim allows at most 1 request per second, so wait until the user stops clicking
-        function scheduleFetchCity() {
-            clearTimeout(cityTimer);
-            cityText = { key: "Fetching..." };
-            renderCity();
-            cityTimer = setTimeout(fetchCity, 1000);
-        }
-
-        async function fetchCity() {
-            const requestId = ++cityRequestId;
-            try {
-                const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                const data = await res.json();
-                if (requestId !== cityRequestId) return; // a newer request is in flight
-                const a = data.address || {};
-                const name = a.city || a.town || a.village || a.municipality || a.county;
-                cityText = name ? { name } : { key: "Unknown location" };
-            } catch (e) {
-                if (requestId !== cityRequestId) return;
-                cityText = { key: "Unable to retrieve" };
-            }
-            renderCity();
-        }
-
-        function renderCity() {
-            document.getElementById("city").textContent = cityText.name ?? t(cityText.key);
-        }
-
-        // ---------- Weather ----------
-
-        async function fetchWeather() {
-            const requestId = ++weatherRequestId;
-            weatherData = null;
-            weatherFailed = false;
-            renderWeather();
-            try {
-                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=precipitation_sum,uv_index_max,sunrise,sunset&hourly=precipitation,temperature_2m,uv_index,weathercode,relative_humidity_2m&timezone=auto`;
-                const res = await fetch(url);
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                const data = await res.json();
-                if (requestId !== weatherRequestId) return; // location changed meanwhile
-                weatherData = data;
-            } catch (error) {
-                if (requestId !== weatherRequestId) return;
-                console.error(error);
-                weatherFailed = true;
-            }
-            renderWeather();
-            document.getElementById('radarMap').src =
-                `https://www.rainviewer.com/map.html?loc=${lat.toFixed(3)},${lon.toFixed(3)},8&oFa=0&oC=0&oU=0&oCS=1&oF=0&oAP=1&c=3&o=83&lm=1&layer=radar`;
-        }
-
-        function conditionFor(code) {
-            const cond = weatherCodeMap[code];
-            if (!cond) return { icon: "❓", desc: t("Unknown") };
-            return { icon: cond.icon, desc: isSpanish ? cond.es : cond.desc };
-        }
-
-        function renderWeather() {
-            const set = (id, text) => { document.getElementById(id).textContent = text; };
-            const condEl = document.getElementById('weather-condition');
-
-            if (!weatherData) {
-                const msg = weatherFailed ? t("Could not load weather data. Please try again later.") : t("Loading...");
-                condEl.innerHTML = `${weatherFailed ? "⚠️" : "⏳"} <span></span>`;
-                condEl.querySelector('span').textContent = msg;
-                ['temp', 'wind', 'rain', 'humidity', 'uv'].forEach(id => set(id, weatherFailed ? "—" : t("Loading...")));
-                set('recommendation', weatherFailed ? "—" : t("Checking conditions..."));
-                set('bestDay', weatherFailed ? "—" : t("Calculating..."));
-                document.getElementById('rainList').innerHTML = "";
-                return;
-            }
-
-            const data = weatherData;
-            const weather = data.current_weather;
-            const rainToday = data.daily.precipitation_sum[0] ?? 0;
-            const uv = data.daily.uv_index_max[0] ?? "N/A";
-
-            // current_weather.time can be on a 15-minute step (e.g. 11:15); match the hour
-            let humidity = "N/A";
-            const hourKey = weather.time.slice(0, 13);
-            const idx = data.hourly.time.findIndex(time => time.startsWith(hourKey));
-            if (idx !== -1 && data.hourly.relative_humidity_2m[idx] != null) {
-                humidity = data.hourly.relative_humidity_2m[idx];
-            }
-
-            const cond = conditionFor(weather.weathercode);
-            condEl.innerHTML = `${cond.icon} <span></span>`;
-            condEl.querySelector('span').textContent = cond.desc;
-
-            set('temp', `${weather.temperature}°C`);
-            set('wind', `${t("Wind:")} ${weather.windspeed} km/h`);
-            set('rain', `${t("Rain:")} ${rainToday} mm`);
-            set('humidity', `${t("Humidity:")} ${humidity}%`);
-            set('uv', `${t("UV Index:")} ${uv}`);
-
-            updateTodayRecommendation(rainToday);
-            suggestBestDays(data.daily, data.hourly);
-        }
-
-        // "2025-05-15" -> local Date (new Date("2025-05-15") is UTC and shows the previous day in PR)
-        function parseLocalDate(iso) {
-            const [y, m, d] = iso.split('-').map(Number);
-            return new Date(y, m - 1, d);
-        }
-
-        function formatDay(iso) {
-            return parseLocalDate(iso).toLocaleDateString(isSpanish ? 'es-PR' : 'en-US',
-                { weekday: 'short', month: 'short', day: 'numeric' });
-        }
-
-        // "2025-05-15T06:42" -> minutes since midnight (location's local time)
-        function minutesOfDay(isoDateTime) {
-            return parseInt(isoDateTime.slice(11, 13), 10) * 60 + parseInt(isoDateTime.slice(14, 16), 10);
-        }
-
-        function formatHour(h) {
-            h = h % 24;
-            const ampm = h >= 12 ? 'PM' : 'AM';
-            let hour = h % 12;
-            if (hour === 0) hour = 12;
-            return `${hour}:00${ampm}`;
-        }
-
-        // Daylight hours with little/no rain, temp 18-30°C and UV index ≤ 6
-        function getBestMowingHours(day, hourly, sunrise, sunset) {
-            const sunriseMin = sunrise ? minutesOfDay(sunrise) : 6 * 60;
-            const sunsetMin = sunset ? minutesOfDay(sunset) : 18 * 60;
-            const hours = [];
-            for (let i = 0; i < hourly.time.length; i++) {
-                if (!hourly.time[i].startsWith(day)) continue;
-                const hour = parseInt(hourly.time[i].slice(11, 13), 10);
-                const start = hour * 60;
-                if (start < sunriseMin || start + 60 > sunsetMin) continue; // night
-                const rain = hourly.precipitation[i] ?? 0;
-                const temp = hourly.temperature_2m[i];
-                const uv = hourly.uv_index[i] ?? 0;
-                if (rain <= 0.2 && temp >= 18 && temp <= 30 && uv <= 6) {
-                    hours.push(hour);
-                }
-            }
-            // Group consecutive hours into ranges; a range [7, 9] means 7:00 to 10:00
-            const ranges = [];
-            for (const h of hours) {
-                const last = ranges[ranges.length - 1];
-                if (last && h === last[1] + 1) last[1] = h;
-                else ranges.push([h, h]);
-            }
-            return ranges.map(([s, e]) => `${formatHour(s)}-${formatHour(e + 1)}`);
-        }
-
-        function getDayWeatherCode(day, hourly) {
-            const freq = {};
-            for (let i = 0; i < hourly.time.length; i++) {
-                if (hourly.time[i].startsWith(day)) {
-                    const c = hourly.weathercode[i];
-                    freq[c] = (freq[c] || 0) + 1;
-                }
-            }
-            let best = null, max = 0;
-            for (const c in freq) {
-                if (freq[c] > max) { max = freq[c]; best = Number(c); }
-            }
-            return best;
-        }
-
-        function rainLabel(rain) {
-            if (rain <= 1) return "Dry";
-            if (rain <= 3) return "Light rain";
-            return "Rain";
-        }
-
-        function suggestBestDays(daily, hourly) {
-            const days = daily.time
-                .map((iso, i) => ({ iso, i, rain: daily.precipitation_sum[i] }))
-                .slice(0, 7)
-                .filter(d => d.rain != null)
-                .sort((a, b) => a.rain - b.rain);
-            const top3 = days.slice(0, 3);
-
-            document.getElementById('rainList').innerHTML = top3.map((day, n) => {
-                const bestHours = getBestMowingHours(day.iso, hourly, daily.sunrise?.[day.i], daily.sunset?.[day.i]);
-                const hoursText = bestHours.length
-                    ? `<strong>${t("Best hours:")}</strong> ${bestHours.join(', ')}`
-                    : t("No ideal daylight hours (rain, heat or UV).");
-                const code = getDayWeatherCode(day.iso, hourly);
-                const cond = code !== null ? conditionFor(code) : { icon: "", desc: "" };
-                return `
-                <li class="rain-card">
-                    <div class="rain-header">
-                        <span class="rain-icon">${cond.icon}</span>
-                        <div>
-                            <div class="rain-date">${n + 1}. ${formatDay(day.iso)}</div>
-                            <div class="rain-desc">${cond.desc}</div>
+        <section id="view-settings" class="view" hidden aria-labelledby="settingsHeading">
+            <h1 class="page-title" id="settingsHeading" data-i18n="settings.title">Settings</h1>
+            <div class="stack">
+                <div class="card">
+                    <div class="setting-row">
+                        <div class="name" data-i18n="settings.language">Language</div>
+                        <div class="segmented" data-setting="lang" role="group">
+                            <button type="button" data-value="es">Español</button>
+                            <button type="button" data-value="en">English</button>
                         </div>
                     </div>
-                    <div class="rain-amount"><strong>${t("Rain:")}</strong> ${day.rain.toFixed(1)} mm</div>
-                    <div class="rain-hours">${hoursText}</div>
-                </li>
-                `;
-            }).join('');
+                    <div class="setting-row">
+                        <div class="name" data-i18n="settings.units">Units</div>
+                        <div class="segmented" data-setting="units" role="group">
+                            <button type="button" data-value="metric" data-i18n="settings.metric">°C · km/h · mm</button>
+                            <button type="button" data-value="imperial" data-i18n="settings.imperial">°F · mph · in</button>
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <div class="name" data-i18n="settings.theme">Theme</div>
+                        <div class="segmented" data-setting="theme" role="group">
+                            <button type="button" data-value="auto" data-i18n="settings.auto">Auto</button>
+                            <button type="button" data-value="light" data-i18n="settings.light">Light</button>
+                            <button type="button" data-value="dark" data-i18n="settings.dark">Dark</button>
+                        </div>
+                    </div>
+                </div>
 
-            if (!top3.length) {
-                document.getElementById('bestDay').textContent = "—";
-                return;
-            }
-            const best = top3[0];
-            const label = rainLabel(best.rain);
-            const icon = label === "Dry" ? "✅" : "⚠️";
-            document.getElementById('bestDay').textContent = `${icon} ${t("Best day:")} ${formatDay(best.iso)} (${t(label)})`;
-        }
+                <div class="card">
+                    <h2 class="section-title" data-i18n="settings.backup">Backup</h2>
+                    <p class="small muted" style="margin-top:0" data-i18n="settings.backupDesc"></p>
+                    <div class="actions">
+                        <button type="button" class="btn" id="exportBtn"><i class="ti ti-download" aria-hidden="true"></i><span data-i18n="settings.export">Export</span></button>
+                        <button type="button" class="btn" id="importBtn"><i class="ti ti-upload" aria-hidden="true"></i><span data-i18n="settings.import">Import</span></button>
+                        <input type="file" id="importFile" accept="application/json,.json" hidden>
+                    </div>
+                </div>
 
-        function updateTodayRecommendation(rain) {
-            const message = rain <= 1 ? "✅ " + t("Ideal day for mowing — no or very little rain.") :
-                            rain <= 3 ? "⚠️ " + t("Light rain expected. Mowing possible if urgent.") :
-                            "❌ " + t("Heavy rain today. Recommend rescheduling.");
-            document.getElementById('recommendation').textContent = message;
-        }
+                <div class="card">
+                    <h2 class="section-title" data-i18n="settings.howScore">How the score works</h2>
+                    <p class="small muted" style="margin:0" data-i18n="settings.howScoreDesc"></p>
+                </div>
 
-        // ---------- Startup ----------
+                <div class="card">
+                    <h2 class="section-title" data-i18n="settings.about">About</h2>
+                    <p class="small muted" style="margin-top:0" data-i18n="settings.aboutDesc"></p>
+                    <a class="small" href="https://github.com/Trukitro/lawn-mowing-forecast" target="_blank" rel="noopener" data-i18n="settings.source">Source code</a>
+                </div>
+            </div>
+        </section>
+    </main>
 
-        const citySelect = document.getElementById('pr-cities');
-        prCities.forEach(c => {
-            const opt = document.createElement('option');
-            opt.value = `${c.lat},${c.lon}`;
-            opt.textContent = c.name;
-            citySelect.appendChild(opt);
-        });
-        citySelect.addEventListener('change', function () {
-            if (!this.value) return;
-            const [cityLat, cityLon] = this.value.split(',').map(Number);
-            setLocation(cityLat, cityLon);
-        });
+    <dialog class="sheet" id="locationSheet" aria-labelledby="locationTitle">
+        <div class="sheet-handle"></div>
+        <div class="sheet-body">
+            <div class="sheet-head">
+                <h2 id="locationTitle" data-i18n="loc.title">Choose location</h2>
+                <button type="button" class="icon-btn" data-close aria-label="Close"><i class="ti ti-x" aria-hidden="true"></i></button>
+            </div>
+            <div class="search">
+                <i class="ti ti-search" aria-hidden="true"></i>
+                <input type="search" class="input" id="placeSearch" autocomplete="off" data-i18n-placeholder="loc.search" data-i18n-aria="loc.title" placeholder="Juncos, Caguas, Ponce…">
+            </div>
+            <ul class="result-list" id="placeResults"></ul>
+            <button type="button" class="btn btn-block" id="useMyLocation" style="margin-bottom:8px"><i class="ti ti-current-location" aria-hidden="true"></i><span data-i18n="loc.useMine">Use my location</span></button>
+            <p class="field-error" id="locationError"></p>
+            <p class="small muted" style="margin:8px 0 6px" data-i18n="loc.orMap">Or tap the map</p>
+            <div id="locationMap" class="picker-map"></div>
+            <button type="button" class="btn btn-primary btn-block" id="usePoint" hidden><i class="ti ti-check" aria-hidden="true"></i><span data-i18n="loc.usePoint">Use this point</span></button>
+        </div>
+    </dialog>
 
-        document.getElementById('langBtn').addEventListener('click', toggleLanguage);
-        document.getElementById('updateBtn').addEventListener('click', updateCoords);
-        document.getElementById('myLocationBtn').addEventListener('click', useMyLocation);
+    <dialog class="sheet" id="clientSheet" aria-labelledby="clientSheetTitle">
+        <div class="sheet-handle"></div>
+        <div class="sheet-body" id="clientSheetBody"></div>
+    </dialog>
 
-        isSpanish = storageGet(LANG_KEY) === "es";
-        applyStaticTranslations();
-
-        // Start location: URL (?lat=..&lon=..) > last used location > default (Juncos)
-        (function initLocation() {
-            const params = new URLSearchParams(window.location.search);
-            const urlLat = parseFloat(params.get('lat'));
-            const urlLon = parseFloat(params.get('lon'));
-            if (isValidCoord(urlLat, urlLon)) {
-                setLocation(urlLat, urlLon);
-                return;
-            }
-            try {
-                const saved = JSON.parse(storageGet(LOCATION_KEY));
-                if (saved && isValidCoord(saved.lat, saved.lon)) {
-                    setLocation(saved.lat, saved.lon);
-                    return;
-                }
-            } catch (e) { /* ignore bad saved value */ }
-            setLocation(DEFAULT_LOCATION.lat, DEFAULT_LOCATION.lon);
-        })();
-    </script>
-
+    <dialog class="sheet" id="clientFormSheet" aria-labelledby="clientFormTitle">
+        <div class="sheet-handle"></div>
+        <div class="sheet-body">
+            <form id="clientForm" novalidate>
+                <div class="sheet-head">
+                    <h2 id="clientFormTitle"></h2>
+                    <button type="button" class="icon-btn" data-close aria-label="Close"><i class="ti ti-x" aria-hidden="true"></i></button>
+                </div>
+                <div class="field">
+                    <label for="cfName" data-i18n="form.name">Name</label>
+                    <input class="input" id="cfName" name="name" autocomplete="off" data-i18n-placeholder="form.namePh" aria-describedby="cfNameError">
+                    <div class="field-error" id="cfNameError" role="alert"></div>
+                </div>
+                <div class="field">
+                    <label for="cfPhone" data-i18n="form.phone">Phone</label>
+                    <input class="input" id="cfPhone" name="phone" type="tel" autocomplete="off" data-i18n-placeholder="form.phonePh">
+                </div>
+                <div class="field">
+                    <label for="cfAddress" data-i18n="form.address">Address</label>
+                    <input class="input" id="cfAddress" name="address" autocomplete="off" data-i18n-placeholder="form.addressPh">
+                </div>
+                <div class="field">
+                    <label for="cfTown" data-i18n="form.town">Town</label>
+                    <select class="input" id="cfTown" name="town"></select>
+                </div>
+                <div class="field">
+                    <span class="small" style="font-weight:500;color:var(--text-2)" data-i18n="form.pin">Exact location</span>
+                    <div id="clientMap" class="picker-map" style="margin-bottom:0"></div>
+                    <div class="small muted" id="cfCoords"></div>
+                </div>
+                <div class="actions" style="justify-content:space-between;margin-top:16px">
+                    <button type="button" class="btn btn-ghost btn-danger" id="cfDelete"><i class="ti ti-trash" aria-hidden="true"></i><span data-i18n="form.delete">Delete client</span></button>
+                    <div class="actions" style="margin-left:auto">
+                        <button type="button" class="btn" data-close><span data-i18n="form.cancel">Cancel</span></button>
+                        <button type="submit" class="btn btn-primary"><i class="ti ti-check" aria-hidden="true"></i><span data-i18n="form.save">Save</span></button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </dialog>
 </body>
 </html>

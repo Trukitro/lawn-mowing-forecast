@@ -1,0 +1,9 @@
+{
+  "name": "lawn-mowing-forecast",
+  "private": true,
+  "type": "module",
+  "description": "Plan the best days and hours to mow, based on the weather forecast.",
+  "scripts": {
+    "test": "node --test"
+  }
+}

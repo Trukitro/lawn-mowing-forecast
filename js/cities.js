@@ -1,5 +1,5 @@
-// Puerto Rico municipalities with coordinates (shared by index.html and client_service.html)
-const prCities = [
+// Puerto Rico municipalities with coordinates
+export const prCities = [
     { name: "Adjuntas", lat: 18.1636, lon: -66.7226 },
     { name: "Aguada", lat: 18.3797, lon: -67.1888 },
     { name: "Aguadilla", lat: 18.4275, lon: -67.1541 },
@@ -79,13 +79,3 @@ const prCities = [
     { name: "Yabucoa", lat: 18.0505, lon: -65.8793 },
     { name: "Yauco", lat: 18.0344, lon: -66.8502 }
 ];
-
-// Escape text before inserting it into HTML strings
-function escapeHtml(value) {
-    return String(value ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
-}
