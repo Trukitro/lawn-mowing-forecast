@@ -19,12 +19,16 @@ Know at a glance whether today is a good day to mow, and at what time. A mobile-
 - **Location search:** all 78 Puerto Rico municipalities offline, plus worldwide place search, your device location, or tap a point on the map.
 - **Radar, map and hourly table** in tabs next to the forecast.
 - **Clients:** name, phone, address, town and an exact pin on the map. Each client shows their **next good day** and last service. Log services, get directions, or open the forecast at the client's address.
-- **Backup:** export and import your clients as a JSON file.
+- **Backup:** export and import your clients as a JSON file. Settings shows the date of your last backup, and the Clients tab reminds you when you've never backed up (a week after your first client) or the last backup is more than 30 days old.
 - **Settings:** English or Spanish, °C/km/h/mm or °F/mph/in, and light, dark or automatic theme. Everything is remembered.
 - **Installable app (PWA):** add it to your phone's home screen or install it on desktop from **Settings → Install the app**. It opens without a connection and shows the last forecast it loaded.
 - **Shareable links:** open the app at specific coordinates with `?lat=18.23&lon=-65.92`.
 
-Clients are stored only in your browser (`localStorage`). They never leave your device unless you export them.
+Clients are stored only in your browser (`localStorage`). They never leave your device unless you export them. Keep in mind:
+
+- They're per device and per browser. On iPhone, the installed app and Safari keep separate data; move clients between them with export and import.
+- Clearing your browsing data or using a private window removes them.
+- The app asks the browser for persistent storage when you save data (and right away in the installed app), so it isn't cleared when space runs low. Settings shows whether the browser granted it.
 
 ---
 
@@ -82,7 +86,8 @@ The service worker fetches app files from the network first, so a new deploy sho
 | `js/score.js` | Mowing score: pure functions, no DOM |
 | `js/forecast.js` | Forecast view: verdict, days, hour bar, tabs |
 | `js/clients.js` | Clients view, client detail and form |
-| `js/settings.js` | Settings view and backup |
+| `js/settings.js` | Settings view: language, units and theme |
+| `js/backup.js` | Export/import, persistent storage and the backup reminder |
 | `js/location.js` | Location chip and place search |
 | `js/weather.js` | Open-Meteo, geocoding and weather icons |
 | `js/store.js` | `localStorage` persistence and migration from the old version |
@@ -93,7 +98,7 @@ The service worker fetches app files from the network first, so a new deploy sho
 | `manifest.webmanifest` | App name, icons and colors for installing |
 | `Images/icons/` | App icons (regular, maskable and Apple touch icon) |
 | `scripts/make_icons.py` | Regenerates the app icons (needs Pillow) |
-| `tests/` | Unit tests for the score (`node --test`) |
+| `tests/` | Unit tests for the score and the backup reminder (`node --test`) |
 | `client_service.html` | Redirect from the old clients page |
 
 ---

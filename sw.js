@@ -4,7 +4,7 @@
 //   Weather and place APIs: network first, last response when offline.
 //   Map tiles and the radar are not cached (OpenStreetMap's tile policy, and radar must be live).
 
-const VERSION = "v1";
+const VERSION = "v2";
 const SHELL = `shell-${VERSION}`;
 const LIBS = `libs-${VERSION}`;
 const DATA = `data-${VERSION}`;
@@ -15,6 +15,7 @@ const SHELL_FILES = [
     "manifest.webmanifest",
     "css/styles.css",
     "js/app.js",
+    "js/backup.js",
     "js/cities.js",
     "js/clients.js",
     "js/forecast.js",

@@ -7,6 +7,7 @@ import { initLocation, setLocation } from "./location.js";
 import { initForecast, onForecastShown } from "./forecast.js";
 import { initClients, renderClients } from "./clients.js";
 import { initPwa } from "./pwa.js";
+import { initBackup } from "./backup.js";
 import { $, $$, toast } from "./ui.js";
 
 const DEFAULT_LOCATION = { lat: 18.2272, lon: -65.9196, name: "Juncos" };
@@ -44,6 +45,7 @@ async function start() {
     initForecast();
     initClients();
     initPwa();
+    initBackup();
 
     window.addEventListener("hashchange", route);
     route();

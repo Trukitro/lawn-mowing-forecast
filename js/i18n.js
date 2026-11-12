@@ -148,7 +148,16 @@ const strings = {
         "install.desc": "Open it from your home screen like any other app. It keeps working without a connection, with the last forecast it loaded.",
         "install.button": "Install",
         "install.ios": "On iPhone or iPad: tap Share, then Add to Home Screen.",
-        "install.done": "App installed"
+        "install.done": "App installed",
+        "backup.last": "Last backup: {date}",
+        "backup.never": "No backup yet",
+        "backup.protected": "Your browser won't clear this data on its own.",
+        "backup.notProtected": "Your browser may clear this data if it runs low on space.",
+        "reminder.never": "You haven't backed up your {n} clients yet",
+        "reminder.never1": "You haven't backed up your client yet",
+        "reminder.old": "Your last backup was {ago}",
+        "reminder.hint": "Export a copy and keep it somewhere safe, like your email or Drive. Clients are stored only in this browser.",
+        "reminder.later": "Not now"
     },
     es: {
         appName: "Pronóstico de corte",
@@ -297,7 +306,16 @@ const strings = {
         "install.desc": "Ábrela desde tu pantalla de inicio como cualquier otra app. Sigue funcionando sin conexión con el último pronóstico que cargó.",
         "install.button": "Instalar",
         "install.ios": "En iPhone o iPad: toca Compartir y luego Añadir a pantalla de inicio.",
-        "install.done": "App instalada"
+        "install.done": "App instalada",
+        "backup.last": "Última copia: {date}",
+        "backup.never": "Aún no has hecho una copia",
+        "backup.protected": "El navegador no borrará estos datos por su cuenta.",
+        "backup.notProtected": "El navegador podría borrar estos datos si se queda sin espacio.",
+        "reminder.never": "Aún no has hecho una copia de tus {n} clientes",
+        "reminder.never1": "Aún no has hecho una copia de tu cliente",
+        "reminder.old": "Tu última copia fue {ago}",
+        "reminder.hint": "Exporta una copia y guárdala en un lugar seguro, como tu correo o Drive. Los clientes solo se guardan en este navegador.",
+        "reminder.later": "Ahora no"
     }
 };
 

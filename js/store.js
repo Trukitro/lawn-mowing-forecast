@@ -4,6 +4,7 @@ const KEYS = {
     settings: "lawnMowing.settings",
     location: "lawnMowing.lastLocation",
     clients: "lawnMowing.clients",
+    backup: "lawnMowing.backup",
     legacyLang: "lawnMowing.lang",
     legacyDb: "lawnMowing.clientsDb" // sql.js database from the previous version
 };
@@ -126,6 +127,10 @@ export function lastServiceDate(client) {
 }
 
 // ---------- Backup ----------
+
+// { lastExport: ISO date of the last export or import, snoozeUntil: ISO date }
+export function loadBackupInfo() { return read(KEYS.backup) || {}; }
+export function saveBackupInfo(info) { write(KEYS.backup, info); }
 
 export function exportData() {
     return { app: "lawn-mowing-forecast", version: 1, exportedAt: new Date().toISOString(), clients: getClients() };

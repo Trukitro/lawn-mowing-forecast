@@ -162,7 +162,7 @@ function renderDetail() {
         if (!date) { $("#svcError", detailSheet).textContent = t("detail.dateRequired"); return; }
         addService(c.id, date, $("#svcNotes", detailSheet).value);
         toast(t("detail.serviceSaved"));
-        emit("clients");
+        emit("clients", { userAction: true });
     });
     $("#svcDate", detailSheet).addEventListener("input", () => { $("#svcError", detailSheet).textContent = ""; });
 }
@@ -182,7 +182,7 @@ function onDetailClick(e) {
     const del = e.target.closest("[data-delete-service]");
     if (del && confirm(t("detail.deleteService"))) {
         deleteService(c.id, del.dataset.deleteService);
-        emit("clients");
+        emit("clients", { userAction: true });
     }
 }
 
@@ -260,7 +260,7 @@ function onSubmit(e) {
     forecasts.delete(saved.id);
     formSheet.close();
     toast(t("form.saved"));
-    emit("clients");
+    emit("clients", { userAction: true });
     openDetail(saved.id);
 }
 
@@ -271,7 +271,7 @@ function onDelete() {
     forecasts.delete(c.id);
     formSheet.close();
     toast(t("form.deleted"));
-    emit("clients");
+    emit("clients", { userAction: true });
 }
 
 // ---------- Init ----------
