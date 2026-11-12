@@ -19,6 +19,7 @@ Know at a glance whether today is a good day to mow, and at what time. A mobile-
 - **Location search:** all 78 Puerto Rico municipalities offline, plus worldwide place search, your device location, or tap a point on the map.
 - **Radar, map and hourly table** in tabs next to the forecast.
 - **Clients:** name, phone, address, town and an exact pin on the map. Each client shows their **next good day** and last service. Log services, get directions, or open the forecast at the client's address.
+- **Day plan:** "Who can you visit tomorrow?" groups your clients into good, fair and better another day for any of the next 7 days, puts the most overdue first, shows each one's best window, and opens a driving route in Google Maps through the good ones (nearest stop next, up to 10 stops).
 - **Backup:** export and import your clients as a JSON file. Settings shows the date of your last backup, and the Clients tab reminds you when you've never backed up (a week after your first client) or the last backup is more than 30 days old.
 - **Settings:** English or Spanish, °C/km/h/mm or °F/mph/in, and light, dark or automatic theme. Everything is remembered.
 - **Installable app (PWA):** add it to your phone's home screen or install it on desktop from **Settings → Install the app**. It opens without a connection and shows the last forecast it loaded.
@@ -88,6 +89,8 @@ The service worker fetches app files from the network first, so a new deploy sho
 | `js/clients.js` | Clients view, client detail and form |
 | `js/settings.js` | Settings view: language, units and theme |
 | `js/backup.js` | Export/import, persistent storage and the backup reminder |
+| `js/plan.js` | "Who can you visit?" card in the Clients view |
+| `js/planner.js` | Day plan grouping and route order: pure functions |
 | `js/location.js` | Location chip and place search |
 | `js/weather.js` | Open-Meteo, geocoding and weather icons |
 | `js/store.js` | `localStorage` persistence and migration from the old version |
@@ -98,7 +101,7 @@ The service worker fetches app files from the network first, so a new deploy sho
 | `manifest.webmanifest` | App name, icons and colors for installing |
 | `Images/icons/` | App icons (regular, maskable and Apple touch icon) |
 | `scripts/make_icons.py` | Regenerates the app icons (needs Pillow) |
-| `tests/` | Unit tests for the score and the backup reminder (`node --test`) |
+| `tests/` | Unit tests for the score, the day plan and the backup reminder (`node --test`) |
 | `client_service.html` | Redirect from the old clients page |
 
 ---

@@ -38,8 +38,19 @@ async function loadClientForecasts() {
     }
     forecastsLoading = false;
     renderList();
+    emit("client-forecasts");
     if (detailSheet.open && detailId) renderDetail();
 }
+
+export function getClientForecast(id) { return forecasts.get(id); }
+
+// Dates covered by the loaded client forecasts (today first), or [] while loading
+export function clientForecastDates() {
+    for (const f of forecasts.values()) if (f?.days?.length) return f.days.map(d => d.date);
+    return [];
+}
+
+export function openClientDetail(id) { openDetail(id); }
 
 function nextGood(client) {
     if (client.lat == null || client.lon == null) return { text: t("clients.noLocation"), cls: "none" };

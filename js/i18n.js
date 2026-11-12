@@ -157,7 +157,18 @@ const strings = {
         "reminder.never1": "You haven't backed up your client yet",
         "reminder.old": "Your last backup was {ago}",
         "reminder.hint": "Export a copy and keep it somewhere safe, like your email or Drive. Clients are stored only in this browser.",
-        "reminder.later": "Not now"
+        "reminder.later": "Not now",
+        "plan.titleRel": "Who can you visit {day}?",
+        "plan.titleDate": "Who can you visit on {day}?",
+        "plan.summary": "{good} good · {fair} fair · {bad} better another day",
+        "plan.since": "{n} days ago",
+        "plan.servicedToday": "serviced today",
+        "plan.route": "Open route ({n} stops)",
+        "plan.routeCap": "The route includes the first {n} clients; Google Maps doesn't take more stops.",
+        "plan.none": "No client has a good window this day.",
+        "plan.fair": "Fair ({n})",
+        "plan.betterOther": "Better another day ({n})",
+        "plan.noLocation": "{n} without a location on the map"
     },
     es: {
         appName: "Pronóstico de corte",
@@ -315,7 +326,18 @@ const strings = {
         "reminder.never1": "Aún no has hecho una copia de tu cliente",
         "reminder.old": "Tu última copia fue {ago}",
         "reminder.hint": "Exporta una copia y guárdala en un lugar seguro, como tu correo o Drive. Los clientes solo se guardan en este navegador.",
-        "reminder.later": "Ahora no"
+        "reminder.later": "Ahora no",
+        "plan.titleRel": "¿A quién puedes atender {day}?",
+        "plan.titleDate": "¿A quién puedes atender el {day}?",
+        "plan.summary": "{good} con buen día · {fair} regular · {bad} mejor otro día",
+        "plan.since": "hace {n} días",
+        "plan.servicedToday": "atendido hoy",
+        "plan.route": "Abrir ruta ({n} paradas)",
+        "plan.routeCap": "La ruta incluye los primeros {n} clientes; Google Maps no admite más paradas.",
+        "plan.none": "Ningún cliente tiene un buen momento este día.",
+        "plan.fair": "Regular ({n})",
+        "plan.betterOther": "Mejor otro día ({n})",
+        "plan.noLocation": "{n} sin ubicación en el mapa"
     }
 };
 

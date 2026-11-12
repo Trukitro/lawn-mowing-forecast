@@ -717,3 +717,38 @@ dialog.sheet::backdrop { background: rgba(10, 15, 8, 0.45); animation: fade 0.2s
 
 .backup-status { display: flex; flex-direction: column; gap: 2px; font-size: 13px; color: var(--text-2); margin: 0 0 12px; }
 .backup-status span:first-child { font-weight: 600; color: var(--text); }
+
+.plan-title { font-size: 18px; font-weight: 700; margin: 0 0 12px; }
+.plan-days { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 12px; padding-bottom: 2px; scrollbar-width: none; }
+.plan-days::-webkit-scrollbar { display: none; }
+.plan-days button {
+    flex-shrink: 0;
+    border: 1px solid var(--border);
+    background: transparent;
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--text-2);
+}
+.plan-days button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.plan-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 4px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    border-radius: 8px;
+}
+.plan-row:hover { background: var(--surface-2); }
+.plan-row:last-child { border-bottom: 0; }
+.plan-score { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; flex-shrink: 0; }
+.plan-score .pill { padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.plan-hours { font-size: 12px; color: var(--text-2); white-space: nowrap; }
+.plan-group { font-size: 13px; font-weight: 600; color: var(--text-2); margin: 16px 0 4px; }
+.plan-more { margin-top: 12px; }
+.plan-more summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text-2); padding: 6px 0; }
+.plan-empty { display: flex; gap: 8px; align-items: center; color: var(--text-2); font-size: 14px; margin: 4px 0 8px; }
+.plan-empty .ti { font-size: 20px; }
